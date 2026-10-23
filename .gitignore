@@ -1,0 +1,9 @@
+# Database backups
+*.tar
+*.Tar
+*.TAR
+
+# Temporary files
+*.tmp
+*.bak
+.DS_Store
