@@ -1,0 +1,167 @@
+body
+{
+	/*couleur de l'arriere plan*/
+	background-image: url(images/bg1.png);
+	background-color: #d3d3d3;
+}
+
+/****************Header******************/
+
+#myheader {
+	/*Couleur du texte en blanc*/
+	background-image: url(images/tri.png);
+	text-align: center;
+	padding: 50px;
+	margin-bottom: 15px;
+	border-radius: 10px;
+	color: #FFF;
+}
+
+/*selecteur de l'image*/ 
+#logo{
+	/*largeur de l'image*/
+	width: 100px;
+}
+
+/*******Barre de navigation****************/
+.topnav
+{
+	background-color: #001954;
+	padding: 15px;
+	top:0;
+	left:0;
+}
+.topnav a
+{
+	color: white;
+	text-decoration: none;
+	margin: 15px;
+	padding: 18px;
+}
+
+.topnav a:hover
+{
+	color: black;
+	background-color: white;
+}
+
+/*************Premiere Section******************/
+.firstrow
+{
+	width:60%;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 100px;
+}
+
+.firstrow img
+{
+	width:50%;
+	float:left;
+}
+
+.firstrow .producthead
+{
+	margin-top: 10%;
+	width:50%;
+	text-align: center;
+	float: right;
+	text-shadow: 0px 0px 15px #000000;
+}
+
+.firstrow:after
+{
+	content: "";
+	display: block;
+	clear: both;
+}
+
+.secondrow
+{
+	margin-top: 80px;
+}
+.secondrow:after
+{
+	content: "";
+	display: block;
+	clear: both;
+}
+
+/****************** Section Article ****************/
+.article 
+{
+	width:70%;
+	background-color: #FFF;
+	padding: 15px;
+	margin-top:15px;
+	/*positionnez à gauche*/
+	position: relative;
+	left: 0;
+}
+
+
+
+
+.article p {
+	/*espace de 50px au commencement des paragraphe*/
+	text-indent: 50px;
+}
+
+
+
+.article .video {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 20px;
+	width:70%;
+}
+
+/*******barre latérale*******/
+
+.sidebar{
+	width: 25%;
+	float:right;
+	background-color: #FFF;
+	margin-top: 15px;
+	padding: 15px;
+}
+
+.sidebar img{
+	width:50%;
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 20px;
+}
+
+
+/**********Footer********/
+.footer {
+	background-image: url(images/tri.png) ;
+	border-radius: round;
+}
+#footer-h3 {
+	color: #FFF;
+	margin-left: 30px;
+	margin: 30px;
+	box-sizing: 10px;
+	padding: 40px;
+}
+#user-name, #user-mail {
+    border-radius: 5px; /* تصحيح القيمة الخاطئة round */
+    border: none;
+    padding: 10px; /* تكبير حجم حقل الإدخال من الداخل */
+    width: 250px; /* توحيد عرض الحقول */
+    margin: 15px; /* تقليل المسافة الكبيرة بين الحقول */
+    display: block; /* لجعل كل عنصر في سطر منفصل بشكل نظيف */
+}
+.submitbutton {
+    background-color: cadetblue;
+    color: white; /* تغيير لون النص إلى الأبيض */
+    border: none; /* إزالة الإطار الافتراضي */
+    border-radius: 5px; /* إزالة المسافة الخاطئة في 10 px */
+    padding: 10px 20px;
+    cursor: pointer;
+    margin: 10px;
+}
