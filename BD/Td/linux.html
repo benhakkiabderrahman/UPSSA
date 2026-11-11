@@ -1,0 +1,2233 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SYS101 • الدرس الشامل في نظام التشغيل Linux — Cours + TD + TP</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: IBM Plex Sans Arabic & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            arabic: ['"IBM Plex Sans Arabic"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            obsidian: '#090d16',
+            slateCard: '#111827',
+            slateSurface: '#162033',
+            slateBorder: '#1f2d47',
+            macHeader: '#1a2336',
+            macBody: '#0c111d',
+            accentBlue: '#3b82f6',
+            accentCyan: '#06b6d4',
+            accentEmerald: '#10b981',
+            accentAmber: '#f59e0b',
+            accentRose: '#ef4444',
+            accentPurple: '#8b5cf6'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      background-color: #090d16;
+      color: #e2e8f0;
+      background-image: 
+        radial-gradient(circle at 15% 10%, rgba(59, 130, 246, 0.08), transparent 30%),
+        radial-gradient(circle at 85% 25%, rgba(16, 185, 129, 0.06), transparent 30%),
+        radial-gradient(circle at 50% 80%, rgba(139, 92, 246, 0.06), transparent 35%);
+      background-attachment: fixed;
+    }
+
+    /* Strict LTR for all code, paths, flags, and commands */
+    code, pre, .ltr-token, .cmd-badge, .path-pill {
+      direction: ltr !important;
+      unicode-bidi: isolate !important;
+      font-family: 'JetBrains Mono', monospace !important;
+      text-align: left;
+    }
+
+    .cmd-badge {
+      display: inline-block;
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px solid #334155;
+      color: #38bdf8;
+      padding: 0.1rem 0.5rem;
+      border-radius: 0.375rem;
+      font-size: 0.84rem;
+      font-weight: 500;
+      margin: 0 0.15rem;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    /* Mac Window Styling matching JavaScript-pt1.pdf */
+    .mac-window {
+      background: #0c111d;
+      border: 1px solid #1e293b;
+      border-radius: 0.85rem;
+      overflow: hidden;
+      box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.6);
+      margin-top: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .mac-header {
+      background: #161f30;
+      padding: 0.65rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #1e293b;
+      direction: ltr;
+    }
+
+    .mac-dots {
+      display: flex;
+      gap: 0.45rem;
+      align-items: center;
+    }
+
+    .mac-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 9999px;
+    }
+
+    .mac-code {
+      padding: 1.1rem 1.25rem;
+      direction: ltr;
+      text-align: left;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      line-height: 1.7;
+      color: #f1f5f9;
+      overflow-x: auto;
+    }
+
+    .mac-output {
+      background: rgba(16, 185, 129, 0.06);
+      border-top: 1px solid rgba(16, 185, 129, 0.25);
+      padding: 0.85rem 1.25rem;
+    }
+
+    .mac-error {
+      background: rgba(239, 68, 68, 0.07);
+      border-top: 1px solid rgba(239, 68, 68, 0.28);
+      padding: 0.85rem 1.25rem;
+    }
+
+    /* Token breakdown rows matching Page 3 of JavaScript-pt1.pdf */
+    .token-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 0.65rem;
+      padding: 0.6rem 1rem;
+      margin-bottom: 0.45rem;
+      transition: border-color 0.2s;
+    }
+    .token-row:hover {
+      border-color: #334155;
+    }
+    .token-pill {
+      direction: ltr !important;
+      unicode-bidi: isolate;
+      font-family: 'JetBrains Mono', monospace;
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #60a5fa;
+      padding: 0.25rem 0.7rem;
+      border-radius: 0.45rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* Callout boxes with right-side glowing border in RTL (or left border in LTR look) */
+    .callout-box {
+      border-radius: 0.85rem;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
+      position: relative;
+      background: #111827;
+      border: 1px solid #1e293b;
+    }
+    .callout-blue {
+      border-right: 4px solid #3b82f6;
+      background: linear-gradient(90deg, rgba(59,130,246,0.03) 0%, rgba(59,130,246,0.1) 100%);
+    }
+    .callout-amber {
+      border-right: 4px solid #f59e0b;
+      background: linear-gradient(90deg, rgba(245,158,11,0.03) 0%, rgba(245,158,11,0.11) 100%);
+    }
+    .callout-red {
+      border-right: 4px solid #ef4444;
+      background: linear-gradient(90deg, rgba(239,68,68,0.03) 0%, rgba(239,68,68,0.11) 100%);
+    }
+    .callout-green {
+      border-right: 4px solid #10b981;
+      background: linear-gradient(90deg, rgba(16,185,129,0.03) 0%, rgba(16,185,129,0.11) 100%);
+    }
+
+    /* Custom Dark Tables */
+    .course-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border: 1px solid #1e293b;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      margin: 1rem 0;
+      background: #0f172a;
+    }
+    .course-table th {
+      background: #162033;
+      color: #94a3b8;
+      font-weight: 600;
+      font-size: 0.85rem;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #1e293b;
+      text-align: right;
+    }
+    .course-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #1e293b;
+      font-size: 0.92rem;
+    }
+    .course-table tr:last-child td {
+      border-bottom: none;
+    }
+    .course-table tr:hover td {
+      background: rgba(30, 41, 59, 0.4);
+    }
+
+    /* Section Card */
+    .section-card {
+      background: rgba(17, 24, 39, 0.85);
+      border: 1px solid #1e293b;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(8px);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+      body {
+        background: #090d16 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .section-card {
+        break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen selection:bg-blue-500/30 selection:text-blue-200">
+
+  <!-- TOP STICKY NAVIGATION & SEARCH BAR -->
+  <header class="sticky top-0 z-50 bg-obsidian/90 backdrop-blur-md border-b border-slateBorder no-print">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <!-- Brand -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-emerald-500 flex items-center justify-center text-white font-mono font-bold text-lg shadow-lg shadow-blue-500/20">
+          <i class="fa-brands fa-linux text-xl"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-mono uppercase tracking-wider text-blue-400 font-semibold">SYS101 • LINUX OS</span>
+            <span class="text-[11px] bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-mono">71 Sections</span>
+          </div>
+          <h1 class="text-sm sm:text-base font-bold text-white">الدرس الشامل في نظام التشغيل Linux</h1>
+        </div>
+      </div>
+
+      <!-- Live Search & Filter Controls -->
+      <div class="flex items-center gap-2 flex-1 max-w-md">
+        <div class="relative w-full">
+          <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+          <input 
+            id="courseSearch" 
+            type="text" 
+            placeholder="ابحث عن أمر، مفهوم، أو رقم فقرة (مثال: chmod, grep, passwd, umask)..." 
+            class="w-full bg-slateCard border border-slateBorder focus:border-blue-500 rounded-xl pr-10 pl-4 py-2 text-sm text-slate-100 placeholder-slate-400 outline-none transition"
+          />
+          <button id="clearSearchBtn" class="hidden absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="flex items-center gap-2">
+        <a href="#part-11" class="px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 text-xs font-semibold flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-bolt"></i>
+          <span>ملخص الامتحان & Quiz</span>
+        </a>
+        <button onclick="window.print()" class="px-3 py-2 rounded-xl bg-slateCard hover:bg-slateSurface border border-slateBorder text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition" title="طباعة أو حفظ كملف PDF">
+          <i class="fa-solid fa-file-pdf text-rose-400"></i>
+          <span class="hidden sm:inline">PDF</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Category Filter Bar -->
+    <div class="max-w-6xl mx-auto px-4 pb-2.5 flex items-center gap-2 overflow-x-auto text-xs">
+      <button onclick="filterCategory('all')" data-cat-btn="all" class="cat-btn px-3 py-1.5 rounded-lg bg-blue-600 text-white font-semibold transition shrink-0">
+        الكل (الأجزاء 1 - 11)
+      </button>
+      <button onclick="filterCategory('cours')" data-cat-btn="cours" class="cat-btn px-3 py-1.5 rounded-lg bg-slateCard hover:bg-slateSurface text-slate-300 border border-slateBorder transition shrink-0">
+        📘 الدروس النظرية (الأجزاء 1 - 8)
+      </button>
+      <button onclick="filterCategory('tp')" data-cat-btn="tp" class="cat-btn px-3 py-1.5 rounded-lg bg-slateCard hover:bg-slateSurface text-emerald-400 border border-slateBorder transition shrink-0">
+        💻 التطبيق العملي TP1 (الجزء 9)
+      </button>
+      <button onclick="filterCategory('td')" data-cat-btn="td" class="cat-btn px-3 py-1.5 rounded-lg bg-slateCard hover:bg-slateSurface text-purple-400 border border-slateBorder transition shrink-0">
+        📝 تمارين TD محلولة (الجزء 10)
+      </button>
+      <button onclick="filterCategory('exam')" data-cat-btn="exam" class="cat-btn px-3 py-1.5 rounded-lg bg-slateCard hover:bg-slateSurface text-amber-400 border border-slateBorder transition shrink-0">
+        🏆 المراجعة والاختبار التفاعلي (الجزء 11)
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-6xl mx-auto px-4 py-8">
+
+    <!-- ========================================== -->
+    <!-- HERO COVER CARD (MATCHING PAGE 1 OF JS PDF) -->
+    <!-- ========================================== -->
+    <section class="relative rounded-2xl bg-gradient-to-b from-[#131d31] to-[#0d1424] border border-slateBorder p-6 sm:p-10 mb-10 overflow-hidden shadow-2xl">
+      <!-- Subtle Decorative Terminal Watermark -->
+      <div class="absolute -left-10 -top-10 text-[180px] text-blue-500/5 font-mono select-none pointer-events-none">
+        $_
+      </div>
+
+      <div class="relative z-10">
+        <!-- Course Code Pill -->
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 font-mono text-xs font-semibold mb-4">
+          <span>SYS101</span>
+          <span>•</span>
+          <span>SYSTÈMES D'EXPLOITATION</span>
+        </div>
+
+        <!-- Giant Title -->
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div>
+            <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white font-mono flex items-center gap-4" dir="ltr">
+              <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-emerald-400">Linux</span>
+              <span class="text-xs sm:text-sm font-mono px-3 py-1 rounded-lg bg-slate-800/90 border border-slate-700 text-slate-300">Ubuntu 24.04 LTS</span>
+            </h1>
+            <h2 class="text-xl sm:text-2xl font-bold text-slate-100 mt-3">
+              الدرس الشامل في نظام التشغيل Linux — من الصفر إلى الاحتراف
+            </h2>
+            <p class="text-sm font-mono text-slate-400 mt-1" dir="ltr">
+              Notions de base, Architecture, Shell, Système de fichiers, Redirections, Permissions, Users/Groups, Sudo, ACL, TP1 & TD
+            </p>
+          </div>
+        </div>
+
+        <!-- Badges Row (Exact match to Page 1 of JS PDF) -->
+        <div class="flex flex-wrap items-center gap-2.5 my-5" dir="ltr">
+          <span class="px-3 py-1 rounded-md bg-blue-500/20 border border-blue-500/40 text-blue-300 font-mono text-xs font-semibold">Cours 1 + Cours 2 + Chapitre 2</span>
+          <span class="px-3 py-1 rounded-md bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-mono text-xs font-semibold">TP1 + TD Corrigés</span>
+          <span class="px-3 py-1 rounded-md bg-purple-500/20 border border-purple-500/40 text-purple-300 font-mono text-xs font-semibold">complete.guide</span>
+          <span class="px-3 py-1 rounded-md bg-amber-500/20 border border-amber-500/40 text-amber-300 font-mono text-xs font-semibold">Beginner → Intermediate</span>
+        </div>
+
+        <!-- Intro Box -->
+        <div class="bg-obsidian/70 border border-slateBorder rounded-xl p-4 sm:p-5 text-slate-300 leading-relaxed text-sm sm:text-base">
+          هذا الدرس يجمع وينظم محتوى ملفات <span class="cmd-badge">Cours 1</span> و <span class="cmd-badge">Cours 2</span> و <span class="cmd-badge">Chapitre 2</span> و <span class="cmd-badge">TD</span> و <span class="cmd-badge">TP1</span> في شكل مرجع جامعي متكامل باللغة العربية، مع الإبقاء على أسماء الأوامر والمفاهيم التقنية باللغة الإنجليزية. سنتبع ترتيباً منطقياً: نفهم أولاً كيف يعمل <span class="cmd-badge">Linux</span>، ثم نتعلم استعمال <span class="cmd-badge">Terminal</span> والأوامر، وبعد ذلك ندرس <span class="cmd-badge">File System</span> و <span class="cmd-badge">Redirections & Pipes</span> و <span class="cmd-badge">Permissions</span> و <span class="cmd-badge">Users & Groups</span>، ونطبق كل ذلك من خلال تمارين عملية مستوحاة من <span class="cmd-badge">TP1</span> و <span class="cmd-badge">TD</span>.
+        </div>
+
+        <!-- COURSE MAP ("خريطة الدرس" matching Page 1 of JS PDF) -->
+        <div class="mt-8">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+              <span>خريطة الدرس الشاملة (11 جزءاً • 71 فقرة)</span>
+            </h3>
+            <span class="text-xs text-slate-400">اضغط على أي جزء للانتقال السريع إليه</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <a href="#part-1" class="group flex items-center justify-between p-3.5 rounded-xl bg-slateCard/90 hover:bg-slateSurface border border-slateBorder hover:border-blue-500/50 transition">
+              <div>
+                <div class="text-xs text-blue-400 font-mono">الجزء الأول (1 - 7)</div>
+                <div class="font-bold text-sm text-slate-100 group-hover:text-white">أساسيات نظام التشغيل Linux</div>
+              </div>
+              <span class="w-8 h-8 rounded-lg bg-blue-500/15 border border-blue-500/30 text-blue-400 font-mono text-xs font-bold flex items-center justify-center">01</span>
+            </a>
+
+            <a href="#part-2" class="group flex items-center justify-between p-3.5 rounded-xl bg-slateCard/90 hover:bg-slateSurface border border-slateBorder hover:border-blue-500/50 transition">
+              <div>
+                <div class="text-xs text-blue-400 font-mono">الجزء الثاني (8 - 11)</div>
+                <div class="font-bold text-sm text-slate-100 group-hover:text-white">العمل باستخدام Shell و Terminal</div>
+              </div>
+              <span class="w-8 h-8 rounded-lg bg-blue-500/15 border border-blue-500/30 text-blue-400 font-mono text-xs font-bold flex items-center justify-center">02</span>
+            </a>
+
+            <a href="#part-3" class="group flex items-center justify-between p-3.5 rounded-xl bg-slateCard/90 hover:bg-slateSurface border border-slateBorder hover:border-blue-500/50 transition">
+              <div>
+                <div class="text-xs text-blue-400 font-mono">الجزء الثالث (12 - 21)</div>
+                <div class="font-bold text-sm text-slate-100 group-hover:text-white">نظام الملفات File System & Inode</div>
+              </div>
+              <span class="w-8 h-8 rounded-lg bg-blue-500/15 border border-blue-500/30 text-blue-400 font-mono text-xs font-bold flex items-center justify-center">03</span>
+            </a>
+
+            <a href="#part-5" class="group flex items-center justify-between p-3.5 rounded-xl bg-slateCard/90 hover:bg-slateSurface border border-slateBorder hover:border-cyan-500/50 transition">
+              <div>
+                <div class="text-xs text-cyan-400 font-mono">الجزء الرابع/الخامس (22 - 30)</div>
+                <div class="font-bold text-sm text-slate-100 group-hover:text-white">Pipes, Redirections, grep & find</div>
+              </div>
+              <span class="w-8 h-8 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 font-mono text-xs font-bold flex items-center justify-center">05</span>
+            </a>
+
+            <a href="#part-6" class="group flex items-center justify-between p-3.5 rounded-xl bg-slateCard/90 hover:bg-slateSurface border border-slateBorder hover:border-emerald-500/50 transition">
+              <div>
+                <div class="text-xs text-emerald-400 font-mono">الجزء السادس (31 - 35)</div>
+                <div class="font-bold text-sm text-slate-100 group-hover:text-white">صلاحيات الملفات Permissions & umask</div>
+              </div>
+              <span class="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono text-xs font-bold flex items-center justify-center">06</span>
+            </a>
+
+            <a href="#part-7" class="group flex items-center justify-between p-3.5 rounded-xl bg-slateCard/90 hover:bg-slateSurface border border-slateBorder hover:border-purple-500/50 transition">
+              <div>
+                <div class="text-xs text-purple-400 font-mono">الجزء السابع (36 - 46)</div>
+                <div class="font-bold text-sm text-slate-100 group-hover:text-white">Users و Groups وإدارة الحسابات</div>
+              </div>
+              <span class="w-8 h-8 rounded-lg bg-purple-500/15 border border-purple-500/30 text-purple-400 font-mono text-xs font-bold flex items-center justify-center">07</span>
+            </a>
+
+            <a href="#part-8" class="group flex items-center justify-between p-3.5 rounded-xl bg-slateCard/90 hover:bg-slateSurface border border-slateBorder hover:border-rose-500/50 transition">
+              <div>
+                <div class="text-xs text-rose-400 font-mono">الجزء الثامن (47 - 53)</div>
+                <div class="font-bold text-sm text-slate-100 group-hover:text-white">الصلاحيات المتقدمة sudo, SUID, ACL</div>
+              </div>
+              <span class="w-8 h-8 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-400 font-mono text-xs font-bold flex items-center justify-center">08</span>
+            </a>
+
+            <a href="#part-9" class="group flex items-center justify-between p-3.5 rounded-xl bg-slateCard/90 hover:bg-slateSurface border border-slateBorder hover:border-emerald-500/50 transition">
+              <div>
+                <div class="text-xs text-emerald-400 font-mono">الجزء التاسع (54 - 62)</div>
+                <div class="font-bold text-sm text-slate-100 group-hover:text-white">التطبيق العملي الشامل TP1 (Ex 1→8)</div>
+              </div>
+              <span class="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono text-xs font-bold flex items-center justify-center">09</span>
+            </a>
+
+            <a href="#part-10" class="group flex items-center justify-between p-3.5 rounded-xl bg-slateCard/90 hover:bg-slateSurface border border-slateBorder hover:border-amber-500/50 transition">
+              <div>
+                <div class="text-xs text-amber-400 font-mono">الجزء العاشر والحادي عشر (63 - 71)</div>
+                <div class="font-bold text-sm text-slate-100 group-hover:text-white">تمارين TD + ملخص الامتحان + Quiz</div>
+              </div>
+              <span class="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-400 font-mono text-xs font-bold flex items-center justify-center">11</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- PART 1: أساسيات نظام التشغيل Linux (SECTIONS 1 - 7)              -->
+    <!-- ================================================================= -->
+    <div id="part-1" data-category="cours" class="course-part mb-12">
+      <div class="flex items-center gap-3 mb-6 border-b border-slateBorder pb-4">
+        <span class="w-10 h-10 rounded-xl bg-blue-600 text-white font-mono font-bold flex items-center justify-center text-lg shadow-lg shadow-blue-600/30">1</span>
+        <div>
+          <span class="text-xs font-mono text-blue-400 uppercase">Chapitre 1 • Sections 1 → 7</span>
+          <h2 class="text-2xl font-extrabold text-white">الجزء الأول: أساسيات نظام التشغيل Linux</h2>
+        </div>
+      </div>
+
+      <!-- Section 1 -->
+      <article class="section-card searchable-section">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-lg sm:text-xl font-bold text-blue-400">1. ما هو نظام التشغيل Operating System؟</h3>
+          <span class="text-xs font-mono text-slate-400 bg-slate-800/80 px-2.5 py-1 rounded">Section 1.1</span>
+        </div>
+        <p class="text-slate-300 leading-relaxed mb-4">
+          نظام التشغيل <span class="cmd-badge">Operating System (OS)</span> هو مجموعة من البرامج التي تدير موارد الحاسوب <span class="cmd-badge">Hardware</span>، وتوفر الخدمات اللازمة للتطبيقات والمستخدمين. بمعنى بسيط: عندما نفتح برنامجاً أو نحفظ ملفاً أو نستعمل لوحة المفاتيح، فإن نظام التشغيل يتولى تنظيم هذه العمليات والتواصل مع العتاد.
+        </p>
+
+        <!-- Layered Architecture Visual Diagram -->
+        <div class="my-6 max-w-xl mx-auto bg-obsidian border border-slateBorder rounded-2xl p-5 text-center space-y-2">
+          <div class="text-xs font-mono text-slate-400 mb-2">البنية العامة للحاسوب (Computer System Layers)</div>
+          <div class="p-3 rounded-xl bg-blue-500/15 border border-blue-500/40 text-blue-200 font-bold">
+            <div class="font-mono text-sm">Users</div>
+            <div class="text-xs text-slate-300 font-normal">المستخدمون</div>
+          </div>
+          <div class="text-slate-500 text-xs"><i class="fa-solid fa-arrows-up-down"></i></div>
+          <div class="p-3 rounded-xl bg-purple-500/15 border border-purple-500/40 text-purple-200 font-bold">
+            <div class="font-mono text-sm">Applications</div>
+            <div class="flex justify-center gap-2 mt-1.5" dir="ltr">
+              <span class="px-2 py-0.5 text-xs bg-slate-900 rounded border border-slate-700 font-mono">Firefox</span>
+              <span class="px-2 py-0.5 text-xs bg-slate-900 rounded border border-slate-700 font-mono">WhatsApp</span>
+              <span class="px-2 py-0.5 text-xs bg-slate-900 rounded border border-slate-700 font-mono">Text Editor</span>
+            </div>
+          </div>
+          <div class="text-slate-500 text-xs"><i class="fa-solid fa-arrows-up-down"></i> <span class="font-mono text-[11px] text-amber-400">System Calls</span></div>
+          <div class="p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-200 font-bold">
+            <div class="font-mono text-sm">Operating System (OS / Kernel)</div>
+            <div class="text-xs text-slate-300 font-normal">إدارة الموارد وتوفير الخدمات</div>
+          </div>
+          <div class="text-slate-500 text-xs"><i class="fa-solid fa-arrows-up-down"></i></div>
+          <div class="p-3 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-200 font-bold">
+            <div class="font-mono text-sm">Hardware</div>
+            <div class="flex flex-wrap justify-center gap-2 mt-1.5" dir="ltr">
+              <span class="px-2 py-0.5 text-xs bg-slate-900 rounded border border-slate-700 font-mono">CPU</span>
+              <span class="px-2 py-0.5 text-xs bg-slate-900 rounded border border-slate-700 font-mono">RAM</span>
+              <span class="px-2 py-0.5 text-xs bg-slate-900 rounded border border-slate-700 font-mono">Disk</span>
+              <span class="px-2 py-0.5 text-xs bg-slate-900 rounded border border-slate-700 font-mono">Keyboard</span>
+              <span class="px-2 py-0.5 text-xs bg-slate-900 rounded border border-slate-700 font-mono">Screen</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 my-4">
+          <span class="text-sm font-bold text-slate-300">أمثلة على أنظمة التشغيل:</span>
+          <span class="cmd-badge">Windows</span>
+          <span class="cmd-badge">macOS</span>
+          <span class="cmd-badge">Unix</span>
+          <span class="cmd-badge">Linux</span>
+          <span class="cmd-badge">Android</span>
+        </div>
+
+        <div class="callout-box callout-blue">
+          <div class="font-bold text-blue-400 text-sm mb-1">ملاحظة تقنية — System Calls</div>
+          <p class="text-sm text-slate-300">
+            في <span class="cmd-badge">Unix/Linux</span> تتواصل البرامج مع النظام من خلال <span class="cmd-badge">System Calls</span> وهي طلبات خدمات يرسلها البرنامج إلى النواة <span class="cmd-badge">Kernel</span>.
+          </p>
+        </div>
+      </article>
+
+      <!-- Section 2 -->
+      <article class="section-card searchable-section">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-lg sm:text-xl font-bold text-blue-400">2. الأدوار الأساسية لنظام التشغيل</h3>
+          <span class="text-xs font-mono text-slate-400 bg-slate-800/80 px-2.5 py-1 rounded">Section 1.2</span>
+        </div>
+        <p class="text-slate-300 text-sm mb-3">يؤدي <span class="cmd-badge">OS</span> ثلاثة أدوار رئيسية:</p>
+
+        <div class="overflow-x-auto">
+          <table class="course-table">
+            <thead>
+              <tr>
+                <th>الدور (Rôle)</th>
+                <th>الشرح</th>
+                <th>مثال عملي</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="cmd-badge">Translator</span></td>
+                <td>يحول طلبات البرامج إلى عمليات على <span class="cmd-badge">Hardware</span></td>
+                <td>حفظ ملف على <span class="cmd-badge">Disk</span></td>
+              </tr>
+              <tr>
+                <td><span class="cmd-badge">Chef d'orchestre</span></td>
+                <td>ينظم توزيع الموارد بين البرامج</td>
+                <td>تشغيل <span class="cmd-badge">Video</span> مع <span class="cmd-badge">Download</span> في نفس الوقت</td>
+              </tr>
+              <tr>
+                <td><span class="cmd-badge">Security Agent</span></td>
+                <td>يمنع الوصول غير المسموح إلى الموارد</td>
+                <td>منع تطبيق من استعمال <span class="cmd-badge">Camera</span> دون إذن</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout-box callout-green">
+          <div class="font-bold text-emerald-400 text-sm mb-1">مثال توضيحي: عندما تشاهد فيديو وتحمل ملفاً في الوقت نفسه</div>
+          <ul class="text-sm text-slate-300 list-disc list-inside space-y-1">
+            <li><span class="cmd-badge">OS</span> ينظم استعمال <span class="cmd-badge">CPU</span> بين البرنامجين.</li>
+            <li><span class="cmd-badge">OS</span> يدير <span class="cmd-badge">Memory</span> الخاصة بهما.</li>
+            <li><span class="cmd-badge">OS</span> ينظم الكتابة على <span class="cmd-badge">Disk</span>.</li>
+            <li><span class="cmd-badge">OS</span> يتحكم في الوصول إلى الأجهزة الطرفية.</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- Section 3 & 4 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <article class="section-card searchable-section !mb-0">
+          <h3 class="text-lg font-bold text-blue-400 mb-3">3. المهام الخمس لنظام التشغيل</h3>
+          <div class="space-y-2.5 text-sm">
+            <div class="token-row">
+              <span class="text-slate-300">إدارة البرامج قيد التنفيذ وتوزيع CPU بينها</span>
+              <span class="token-pill">1. Process Management</span>
+            </div>
+            <div class="token-row">
+              <span class="text-slate-300">تخصيص RAM للبرامج واسترجاعها عند الانتهاء</span>
+              <span class="token-pill">2. Memory Management</span>
+            </div>
+            <div class="token-row">
+              <span class="text-slate-300">تنظيم الملفات والمجلدات والتحكم في الصلاحيات</span>
+              <span class="token-pill">3. File Management</span>
+            </div>
+            <div class="token-row">
+              <span class="text-slate-300">إدارة التواصل مع الأجهزة عبر Drivers</span>
+              <span class="token-pill">4. I/O Management</span>
+            </div>
+            <div class="token-row">
+              <span class="text-slate-300">معالجة الأخطاء والمشاكل والـ Interruptions</span>
+              <span class="token-pill">5. Exception Management</span>
+            </div>
+          </div>
+          <p class="text-xs text-slate-400 mt-3">الهدف من هذه المهام هو تقاسم موارد الحاسوب وتحسين استعمالها.</p>
+        </article>
+
+        <article class="section-card searchable-section !mb-0">
+          <h3 class="text-lg font-bold text-blue-400 mb-3">4. خصائص نظام تشغيل جيد</h3>
+          <div class="space-y-3 text-sm">
+            <div class="p-3.5 rounded-xl bg-obsidian border border-slateBorder">
+              <div class="font-mono font-bold text-emerald-400 mb-1" dir="ltr">1. Ergonomics</div>
+              <p class="text-slate-300">سهولة الاستعمال وتوحيد طريقة التعامل مع الموارد.</p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-obsidian border border-slateBorder">
+              <div class="font-mono font-bold text-cyan-400 mb-1" dir="ltr">2. Efficiency</div>
+              <p class="text-slate-300">استغلال <span class="cmd-badge">CPU</span> و <span class="cmd-badge">RAM</span> و <span class="cmd-badge">Disk</span> بكفاءة عالية.</p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-obsidian border border-slateBorder">
+              <div class="font-mono font-bold text-purple-400 mb-1" dir="ltr">3. Scalability / Evolutivity</div>
+              <p class="text-slate-300">القدرة على التكيف مع <span class="cmd-badge">Hardware</span> جديد ومتطلبات متزايدة.</p>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- Section 5, 6, 7 -->
+      <article class="section-card searchable-section">
+        <h3 class="text-lg sm:text-xl font-bold text-blue-400 mb-3">5. لمحة تاريخية عن Unix و Linux</h3>
+        <div class="overflow-x-auto">
+          <table class="course-table">
+            <thead>
+              <tr>
+                <th>السنة</th>
+                <th>التطور التاريخي</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="cmd-badge">1945</span></td><td>حواسيب دون <span class="cmd-badge">Operating System</span></td></tr>
+              <tr><td><span class="cmd-badge">1956</span></td><td>ظهور <span class="cmd-badge">Batch Systems</span></td></tr>
+              <tr><td><span class="cmd-badge">1962</span></td><td>ظهور <span class="cmd-badge">Time Sharing</span></td></tr>
+              <tr><td><span class="cmd-badge">1969</span></td><td>ظهور <span class="cmd-badge">Unix</span> في مختبرات <span class="cmd-badge">Bell Labs</span></td></tr>
+              <tr><td><span class="cmd-badge">1973</span></td><td>إعادة كتابة <span class="cmd-badge">Unix</span> بلغة <span class="cmd-badge">C</span></td></tr>
+              <tr><td><span class="cmd-badge">1975–1983</span></td><td>انتشار <span class="cmd-badge">BSD</span> و <span class="cmd-badge">System V</span></td></tr>
+              <tr><td><span class="cmd-badge">1988</span></td><td>معيار <span class="cmd-badge">POSIX</span> لتوحيد أنظمة Unix</td></tr>
+              <tr><td><span class="cmd-badge">1991</span></td><td>ظهور <span class="cmd-badge">Linux Kernel</span> على يد Linus Torvalds</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout-box callout-amber">
+          <div class="font-bold text-amber-400 text-sm mb-1">ملاحظة مهمة</div>
+          <p class="text-sm text-slate-300">
+            <span class="cmd-badge">Linux</span> بحد ذاته هو <span class="cmd-badge">Kernel</span> (النواة)، بينما توزيعات Linux مثل <span class="cmd-badge">Ubuntu</span> أو <span class="cmd-badge">Debian</span> تجمع الـ <span class="cmd-badge">Kernel</span> مع أدوات وبرامج أخرى لتكوين نظام كامل قابل للاستعمال.
+          </p>
+        </div>
+
+        <hr class="border-slateBorder my-6" />
+
+        <h3 class="text-lg sm:text-xl font-bold text-blue-400 mb-3">6. معمارية النظام Unix/Linux Architecture</h3>
+        <p class="text-sm text-slate-300 mb-4">يتكون النظام من عدة طبقات متتالية:</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+          <!-- Layers -->
+          <div class="bg-obsidian border border-slateBorder rounded-xl p-4 space-y-2 text-center">
+            <div class="p-2.5 rounded-lg bg-blue-500/10 border border-blue-500/30 font-mono text-sm text-blue-300">Applications & Users</div>
+            <div class="p-2.5 rounded-lg bg-cyan-500/10 border border-cyan-500/30 font-mono text-sm text-cyan-300">Shell (Command Interpreter)</div>
+            <div class="p-2.5 rounded-lg bg-purple-500/10 border border-purple-500/30 font-mono text-sm text-purple-300">Libraries & System Calls</div>
+            <div class="p-2.5 rounded-lg bg-emerald-500/15 border border-emerald-500/40 font-mono text-sm text-emerald-300">Kernel (إدارة CPU, Memory, Files, Devices)</div>
+            <div class="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 font-mono text-sm text-amber-300">Hardware</div>
+          </div>
+
+          <!-- Shells Table -->
+          <div>
+            <div class="text-sm text-slate-300 space-y-2 mb-3">
+              <p>• <span class="cmd-badge">Kernel</span>: الجزء الأساسي من نظام التشغيل، المسؤول عن إدارة الموارد وحماية العمليات.</p>
+              <p>• <span class="cmd-badge">Shell</span>: الواجهة التي تستقبل أوامر المستخدم وتطلب تنفيذها.</p>
+            </div>
+            <table class="course-table !my-0">
+              <thead>
+                <tr><th>Shell</th><th>المسار (Path)</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><span class="cmd-badge">sh</span></td><td><span class="cmd-badge">/bin/sh</span></td></tr>
+                <tr><td><span class="cmd-badge">bash</span></td><td><span class="cmd-badge">/bin/bash</span></td></tr>
+                <tr><td><span class="cmd-badge">ksh</span></td><td><span class="cmd-badge">/bin/ksh</span></td></tr>
+                <tr><td><span class="cmd-badge">csh</span></td><td><span class="cmd-badge">/bin/csh</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <hr class="border-slateBorder my-6" />
+
+        <h3 class="text-lg sm:text-xl font-bold text-blue-400 mb-3">7. خصائص Unix/Linux الأربع</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="token-row">
+            <span class="text-sm text-slate-300">عدة مستخدمين يمكنهم العمل على النظام في آن واحد</span>
+            <span class="token-pill">1. Multi-user</span>
+          </div>
+          <div class="token-row">
+            <span class="text-sm text-slate-300">تشغيل عدة مهام في الوقت نفسه</span>
+            <span class="token-pill">2. Multitasking</span>
+          </div>
+          <div class="token-row">
+            <span class="text-sm text-slate-300">الملفات منظمة في شجرة تبدأ من الجذر <code class="text-emerald-400">/</code></span>
+            <span class="token-pill">3. Hierarchical FS</span>
+          </div>
+          <div class="token-row">
+            <span class="text-sm text-slate-300">لكل مستخدم صلاحيات محددة، بينما <code class="text-rose-400">root</code> يمتلك صلاحيات شاملة</span>
+            <span class="token-pill">4. Protection</span>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- PART 2: العمل باستخدام Shell و Terminal (SECTIONS 8 - 11)         -->
+    <!-- ================================================================= -->
+    <div id="part-2" data-category="cours" class="course-part mb-12">
+      <div class="flex items-center gap-3 mb-6 border-b border-slateBorder pb-4">
+        <span class="w-10 h-10 rounded-xl bg-blue-600 text-white font-mono font-bold flex items-center justify-center text-lg shadow-lg shadow-blue-600/30">2</span>
+        <div>
+          <span class="text-xs font-mono text-blue-400 uppercase">Chapitre 1 • Sections 8 → 11</span>
+          <h2 class="text-2xl font-extrabold text-white">الجزء الثاني: العمل باستخدام Shell و Terminal</h2>
+        </div>
+      </div>
+
+      <!-- Section 8 & 9 -->
+      <article class="section-card searchable-section">
+        <h3 class="text-lg sm:text-xl font-bold text-blue-400 mb-2">8. ما هو Terminal وما هو Shell؟</h3>
+        <p class="text-slate-300 text-sm mb-4">
+          <span class="cmd-badge">Terminal</span> هو النافذة أو المكان الذي تكتب فيه الأوامر. أما <span class="cmd-badge">Shell</span> فهو البرنامج الذي يقرأ الأوامر ويفسرها وينفذها.
+        </p>
+
+        <div class="mac-window">
+          <div class="mac-header">
+            <div class="mac-dots">
+              <span class="mac-dot bg-[#ff5f56]"></span>
+              <span class="mac-dot bg-[#ffbd2e]"></span>
+              <span class="mac-dot bg-[#27c93f]"></span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-xs font-mono text-slate-400">BASH / TERMINAL</span>
+              <button onclick="copyCode(this)" class="text-xs font-mono text-slate-400 hover:text-white px-2 py-0.5 rounded bg-slate-800 border border-slate-700">Copy</button>
+            </div>
+          </div>
+          <div class="mac-code">
+echo $SHELL
+cat /etc/shells</div>
+          <div class="mac-output">
+            <div class="text-xs font-bold text-emerald-400 mb-1 text-right">النتيجة</div>
+            <pre class="text-xs sm:text-sm text-emerald-300 font-mono">/bin/bash
+# /etc/shells: valid login shells
+/bin/sh
+/bin/bash
+/usr/bin/bash</pre>
+          </div>
+        </div>
+
+        <div class="space-y-1.5 mt-3">
+          <div class="token-row">
+            <span class="text-sm text-slate-300">يعرض مسار الـ Shell الحالي مثل <span class="cmd-badge">/bin/bash</span></span>
+            <span class="token-pill">echo $SHELL</span>
+          </div>
+          <div class="token-row">
+            <span class="text-sm text-slate-300">يعرض جميع الـ Shells المتوفرة في النظام</span>
+            <span class="token-pill">cat /etc/shells</span>
+          </div>
+        </div>
+
+        <hr class="border-slateBorder my-6" />
+
+        <h3 class="text-lg sm:text-xl font-bold text-blue-400 mb-2">9. فتح وإغلاق Session</h3>
+        <p class="text-slate-300 text-sm mb-3">عند الدخول إلى Linux، يحصل المستخدم على <span class="cmd-badge">Session</span> ويبدأ العمل داخل <span class="cmd-badge">Home Directory</span> الخاص به.</p>
+
+        <div class="overflow-x-auto">
+          <table class="course-table">
+            <thead>
+              <tr><th>الأمر (Command)</th><th>الوظيفة</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="cmd-badge">whoami</span></td><td>عرض اسم المستخدم الحالي</td></tr>
+              <tr><td><span class="cmd-badge">su user</span></td><td>الانتقال إلى مستخدم آخر</td></tr>
+              <tr><td><span class="cmd-badge">su - user</span></td><td>الانتقال مع تحميل بيئة المستخدم الكاملة (Login Shell)</td></tr>
+              <tr><td><span class="cmd-badge">exit</span></td><td>الخروج من الـ Shell الحالي والعودة للمستخدم السابق</td></tr>
+              <tr><td><span class="cmd-badge">Ctrl + D</span></td><td>إنهاء Session أو إغلاق الـ Shell</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mac-window">
+          <div class="mac-header">
+            <div class="mac-dots">
+              <span class="mac-dot bg-[#ff5f56]"></span><span class="mac-dot bg-[#ffbd2e]"></span><span class="mac-dot bg-[#27c93f]"></span>
+            </div>
+            <span class="text-xs font-mono text-slate-400">BASH</span>
+          </div>
+          <div class="mac-code">
+su root
+whoami
+exit</div>
+          <div class="mac-output">
+            <div class="text-xs font-bold text-emerald-400 mb-1 text-right">النتيجة</div>
+            <pre class="text-xs sm:text-sm text-emerald-300 font-mono">root
+logout</pre>
+          </div>
+        </div>
+      </article>
+
+      <!-- Section 10 & 11 -->
+      <article class="section-card searchable-section">
+        <h3 class="text-lg sm:text-xl font-bold text-blue-400 mb-3">10. أنواع الأوامر Commands</h3>
+        <p class="text-sm text-slate-300 mb-4">هناك ثلاثة أنواع مهمة من الأوامر في Linux:</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div class="p-4 rounded-xl bg-obsidian border border-slateBorder">
+            <div class="font-mono font-bold text-blue-400 text-sm mb-2" dir="ltr">1. Internal Commands</div>
+            <p class="text-xs text-slate-300 mb-2">أوامر مدمجة داخل الـ Shell نفسه:</p>
+            <div class="flex flex-wrap gap-1.5" dir="ltr">
+              <span class="cmd-badge">cd</span>
+              <span class="cmd-badge">pwd</span>
+              <span class="cmd-badge">echo</span>
+              <span class="cmd-badge">type</span>
+            </div>
+          </div>
+          <div class="p-4 rounded-xl bg-obsidian border border-slateBorder">
+            <div class="font-mono font-bold text-emerald-400 text-sm mb-2" dir="ltr">2. External Commands</div>
+            <p class="text-xs text-slate-300 mb-2">أوامر موجودة في ملفات تنفيذية مستقلة:</p>
+            <div class="flex flex-wrap gap-1.5" dir="ltr">
+              <span class="cmd-badge">ls</span>
+              <span class="cmd-badge">mkdir</span>
+              <span class="cmd-badge">cp</span>
+              <span class="cmd-badge">find</span>
+            </div>
+          </div>
+          <div class="p-4 rounded-xl bg-obsidian border border-slateBorder">
+            <div class="font-mono font-bold text-purple-400 text-sm mb-2" dir="ltr">3. Aliases</div>
+            <p class="text-xs text-slate-300 mb-2">أسماء مختصرة لأوامر أخرى:</p>
+            <div class="flex flex-wrap gap-1.5" dir="ltr">
+              <span class="cmd-badge">alias ll='ls -l'</span>
+              <span class="cmd-badge">unalias ll</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mac-window">
+          <div class="mac-header">
+            <div class="mac-dots">
+              <span class="mac-dot bg-[#ff5f56]"></span><span class="mac-dot bg-[#ffbd2e]"></span><span class="mac-dot bg-[#27c93f]"></span>
+            </div>
+            <span class="text-xs font-mono text-slate-400">BASH — Aliases & Command Type</span>
+          </div>
+          <div class="mac-code">
+alias ll='ls -l'
+ll
+unalias ll
+type cd
+type ls
+which ls</div>
+          <div class="mac-output">
+            <div class="text-xs font-bold text-emerald-400 mb-1 text-right">النتيجة</div>
+            <pre class="text-xs sm:text-sm text-emerald-300 font-mono">cd is a shell builtin
+ls is /usr/bin/ls
+/usr/bin/ls</pre>
+          </div>
+        </div>
+
+        <hr class="border-slateBorder my-6" />
+
+        <h3 class="text-lg sm:text-xl font-bold text-blue-400 mb-3">11. الحصول على المساعدة Help & Manual</h3>
+        <div class="overflow-x-auto">
+          <table class="course-table">
+            <thead>
+              <tr><th>الأمر</th><th>الوظيفة</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="cmd-badge">man ls</span></td><td>فتح الدليل الكامل (Manual) الخاص بالأمر <span class="cmd-badge">ls</span></td></tr>
+              <tr><td><span class="cmd-badge">ls --help</span></td><td>عرض ملخص سريع للخيارات</td></tr>
+              <tr><td><span class="cmd-badge">which ls</span></td><td>تحديد مسار الملف التنفيذي للأمر الخارجي</td></tr>
+              <tr><td><span class="cmd-badge">type cd</span></td><td>معرفة نوع الأمر (مدمج، خارجي، أو Alias)</td></tr>
+              <tr><td><span class="cmd-badge">man 5 passwd</span></td><td>قراءة دليل ملف الإعداد <span class="cmd-badge">/etc/passwd</span> (الرقم 5 يشير لقسم Configuration Files)</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout-box callout-blue">
+          <div class="font-bold text-blue-400 text-sm mb-1">اختصارات التصفح داخل صفحة <span class="cmd-badge">man</span> أو <span class="cmd-badge">less</span></div>
+          <div class="flex flex-wrap gap-3 text-sm mt-2">
+            <span><span class="cmd-badge">/word</span> البحث عن كلمة</span>
+            <span><span class="cmd-badge">n</span> الانتقال لنتيجة البحث التالية</span>
+            <span><span class="cmd-badge">Space</span> الصفحة التالية</span>
+            <span><span class="cmd-badge">b</span> الصفحة السابقة</span>
+            <span><span class="cmd-badge">q</span> الخروج</span>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- PART 3: نظام الملفات File System (SECTIONS 12 - 21)               -->
+    <!-- ================================================================= -->
+    <div id="part-3" data-category="cours" class="course-part mb-12">
+      <div class="flex items-center gap-3 mb-6 border-b border-slateBorder pb-4">
+        <span class="w-10 h-10 rounded-xl bg-blue-600 text-white font-mono font-bold flex items-center justify-center text-lg shadow-lg shadow-blue-600/30">3</span>
+        <div>
+          <span class="text-xs font-mono text-blue-400 uppercase">Chapitre 1 • Sections 12 → 21</span>
+          <h2 class="text-2xl font-extrabold text-white">الجزء الثالث: نظام الملفات File System</h2>
+        </div>
+      </div>
+
+      <!-- Section 12 & 13 -->
+      <article class="section-card searchable-section">
+        <h3 class="text-lg sm:text-xl font-bold text-blue-400 mb-2">12. مفهوم Everything is a File</h3>
+        <p class="text-sm text-slate-300 mb-3">
+          في <span class="cmd-badge">Unix/Linux</span>، يتم التعامل مع العديد من الموارد على أنها <span class="cmd-badge">Files</span>، بما فيها الأجهزة الطرفية ووسائل الاتصال بين العمليات. الحرف الأول في نتيجة <span class="cmd-badge">ls -l</span> يحدد نوع الملف:
+        </p>
+
+        <div class="overflow-x-auto">
+          <table class="course-table">
+            <thead>
+              <tr><th>الرمز (الحرف الأول)</th><th>النوع (File Type)</th><th>الوظيفة</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="cmd-badge">-</span></td><td><span class="cmd-badge">Regular File</span></td><td>ملف عادي (نص، صورة، برنامج...)</td></tr>
+              <tr><td><span class="cmd-badge">d</span></td><td><span class="cmd-badge">Directory</span></td><td>مجلد</td></tr>
+              <tr><td><span class="cmd-badge">l</span></td><td><span class="cmd-badge">Symbolic Link</span></td><td>رابط رمزي يشير لملف آخر</td></tr>
+              <tr><td><span class="cmd-badge">p</span></td><td><span class="cmd-badge">Named Pipe</span></td><td>اتصال بين <span class="cmd-badge">Processes</span></td></tr>
+              <tr><td><span class="cmd-badge">s</span></td><td><span class="cmd-badge">Socket</span></td><td>اتصال محلي أو شبكي</td></tr>
+              <tr><td><span class="cmd-badge">c</span></td><td><span class="cmd-badge">Character Device</span></td><td>جهاز يتعامل مع البيانات حرفاً بحرف (مثل Keyboard / Terminal)</td></tr>
+              <tr><td><span class="cmd-badge">b</span></td><td><span class="cmd-badge">Block Device</span></td><td>جهاز يتعامل مع البيانات على شكل Blocks (مثل القرص الصلب Disk)</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <hr class="border-slateBorder my-6" />
+
+        <h3 class="text-lg sm:text-xl font-bold text-blue-400 mb-3">13. شجرة المجلدات Linux Directory Hierarchy</h3>
+        <p class="text-sm text-slate-300 mb-4">تبدأ شجرة الملفات من الجذر <span class="cmd-badge">/</span> (Root Directory)، وجميع الملفات والمجلدات توجد تحته:</p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          <div class="p-3.5 rounded-xl bg-obsidian border border-slateBorder">
+            <div class="font-mono font-bold text-blue-400 text-base" dir="ltr">/bin</div>
+            <div class="text-xs text-slate-300 mt-1">الأوامر الأساسية للنظام</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-obsidian border border-emerald-500/40">
+            <div class="font-mono font-bold text-emerald-400 text-base" dir="ltr">/etc</div>
+            <div class="text-xs text-slate-300 mt-1">ملفات إعداد النظام (Configuration)</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-obsidian border border-emerald-500/40">
+            <div class="font-mono font-bold text-emerald-400 text-base" dir="ltr">/home</div>
+            <div class="text-xs text-slate-300 mt-1">مجلدات المستخدمين العاديين</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-obsidian border border-rose-500/40">
+            <div class="font-mono font-bold text-rose-400 text-base" dir="ltr">/root</div>
+            <div class="text-xs text-slate-300 mt-1">مجلد Home الخاص بالمستخدم <code class="text-rose-300">root</code></div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-obsidian border border-slateBorder">
+            <div class="font-mono font-bold text-cyan-400 text-base" dir="ltr">/usr</div>
+            <div class="text-xs text-slate-300 mt-1">برامج ومكتبات إضافية للمستخدمين</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-obsidian border border-emerald-500/40">
+            <div class="font-mono font-bold text-amber-400 text-base" dir="ltr">/var</div>
+            <div class="text-xs text-slate-300 mt-1">بيانات متغيرة وسجلات النظام (Logs)</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-obsidian border border-slateBorder">
+            <div class="font-mono font-bold text-purple-400 text-base" dir="ltr">/tmp</div>
+            <div class="text-xs text-slate-300 mt-1">ملفات مؤقتة مشتركة</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-obsidian border border-slateBorder">
+            <div class="font-mono font-bold text-blue-400 text-base" dir="ltr">/dev</div>
+            <div class="text-xs text-slate-300 mt-1">ملفات الأجهزة (Devices)</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-obsidian border border-slateBorder">
+            <div class="font-mono font-bold text-cyan-400 text-base" dir="ltr">/proc</div>
+            <div class="text-xs text-slate-300 mt-1">معلومات افتراضية عن Kernel والعمليات</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-obsidian border border-slateBorder">
+            <div class="font-mono font-bold text-slate-300 text-base" dir="ltr">/lib</div>
+            <div class="text-xs text-slate-300 mt-1">مكتبات النظام الأساسية</div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Section 14 & 15 -->
+      <article class="section-card searchable-section">
+        <h3 class="text-lg sm:text-xl font-bold text-blue-400 mb-3">14. المسارات Absolute Path و Relative Path & 15. أوامر التنقل Navigation</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div class="p-4 rounded-xl bg-obsidian border border-blue-500/30">
+            <div class="font-mono font-bold text-blue-400 mb-1" dir="ltr">Absolute Path (المسار المطلق)</div>
+            <p class="text-sm text-slate-300">يبدأ دائماً من الجذر <span class="cmd-badge">/</span>، ولا يعتمد على مكانك الحالي. مثال: <span class="cmd-badge">/home/student/TP/TP1</span></p>
+          </div>
+          <div class="p-4 rounded-xl bg-obsidian border border-emerald-500/30">
+            <div class="font-mono font-bold text-emerald-400 mb-1" dir="ltr">Relative Path (المسار النسبي)</div>
+            <p class="text-sm text-slate-300">يبدأ من المجلد الحالي <span class="cmd-badge">Current Directory</span> ولا يبدأ بـ <span class="cmd-badge">/</span>. مثال: <span class="cmd-badge">../TP2</span> أو <span class="cmd-badge">./TP1</span></p>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="course-table">
+            <thead>
+              <tr><th>الرمز / الأمر</th><th>المعنى والوظيفة</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="cmd-badge">/</span></td><td>الجذر <span class="cmd-badge">Root Directory</span></td></tr>
+              <tr><td><span class="cmd-badge">.</span></td><td>المجلد الحالي <span class="cmd-badge">Current Directory</span></td></tr>
+              <tr><td><span class="cmd-badge">..</span></td><td>المجلد الأب <span class="cmd-badge">Parent Directory</span> (مستوى واحد للأعلى)</td></tr>
+              <tr><td><span class="cmd-badge">~</span></td><td>مجلد المستخدم الشخصي <span class="cmd-badge">Home Directory</span></td></tr>
+              <tr><td><span class="cmd-badge">pwd</span></td><td>عرض المسار الحالي (<span class="cmd-badge">Print Working Directory</span>)</td></tr>
+              <tr><td><span class="cmd-badge">cd /etc</span></td><td>الذهاب إلى <span class="cmd-badge">/etc</span></td></tr>
+              <tr><td><span class="cmd-badge">cd ..</span> / <span class="cmd-badge">cd ../..</span></td><td>الرجوع مستوى واحد / الرجوع مستويين للأعلى</td></tr>
+              <tr><td><span class="cmd-badge">cd</span> أو <span class="cmd-badge">cd ~</span></td><td>الذهاب مباشرة إلى <span class="cmd-badge">Home Directory</span></td></tr>
+              <tr><td><span class="cmd-badge">cd -</span></td><td>العودة إلى المجلد السابق (<span class="cmd-badge">Previous Directory</span>)</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mac-window">
+          <div class="mac-header">
+            <div class="mac-dots"><span class="mac-dot bg-[#ff5f56]"></span><span class="mac-dot bg-[#ffbd2e]"></span><span class="mac-dot bg-[#27c93f]"></span></div>
+            <span class="text-xs font-mono text-slate-400">BASH — Navigation Example</span>
+          </div>
+          <div class="mac-code">
+# إذا كان موقعك الحالي هو /home/student/TP/TP1
+cd ../TP2
+# أو باستعمال Absolute Path:
+cd /home/student/TP/TP2
+# للذهاب إلى /home/student/cours من داخل TP1:
+cd ../../cours</div>
+        </div>
+      </article>
+
+      <!-- Section 16, 17, 18 -->
+      <article class="section-card searchable-section">
+        <h3 class="text-lg sm:text-xl font-bold text-blue-400 mb-3">16. إنشاء Files و Directories & 17. عرض الملفات باستخدام <span class="cmd-badge">ls</span></h3>
+        
+        <div class="mac-window">
+          <div class="mac-header">
+            <div class="mac-dots"><span class="mac-dot bg-[#ff5f56]"></span><span class="mac-dot bg-[#ffbd2e]"></span><span class="mac-dot bg-[#27c93f]"></span></div>
+            <span class="text-xs font-mono text-slate-400">BASH — touch, mkdir, ls</span>
+          </div>
+          <div class="mac-code">
+touch notes.txt
+mkdir TP
+mkdir docs scripts sauvegarde
+mkdir -p docs/2026/rapports
+ls -alht</div>
+        </div>
+
+        <div class="space-y-1.5 mt-3">
+          <div class="token-row">
+            <span class="text-sm text-slate-300">إنشاء ملف فارغ (أو تحديث تاريخ التعديل إذا كان موجوداً)</span>
+            <span class="token-pill">touch notes.txt</span>
+          </div>
+          <div class="token-row">
+            <span class="text-sm text-slate-300">إنشاء مجلدات متداخلة (الخيار <code class="text-amber-300">-p</code> ينشئ المجلدات الأب إذا لم تكن موجودة)</span>
+            <span class="token-pill">mkdir -p docs/2026/rapports</span>
+          </div>
+          <div class="token-row">
+            <span class="text-sm text-slate-300">عرض شامل: <code class="text-cyan-300">-a</code> (المخفية)، <code class="text-cyan-300">-l</code> (تفصيلي)، <code class="text-cyan-300">-h</code> (أحجام مقروءة)، <code class="text-cyan-300">-t</code> (مرتبة بالأحدث)</span>
+            <span class="token-pill">ls -alht</span>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto mt-4">
+          <table class="course-table">
+            <thead>
+              <tr><th>خيار الأمر <span class="cmd-badge">ls</span></th><th>الوظيفة</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="cmd-badge">ls -l</span></td><td>عرض تفصيلي (الصلاحيات، المالك، الحجم، التاريخ)</td></tr>
+              <tr><td><span class="cmd-badge">ls -a</span></td><td>إظهار الملفات المخفية (التي تبدأ بنقطة <span class="cmd-badge">.</span>)</td></tr>
+              <tr><td><span class="cmd-badge">ls -lh</span></td><td>عرض أحجام مقروءة للإنسان (KB, MB, GB) مع <span class="cmd-badge">-l</span></td></tr>
+              <tr><td><span class="cmd-badge">ls -R</span></td><td>عرض محتوى المجلدات الفرعية بشكل <span class="cmd-badge">Recursive</span></td></tr>
+              <tr><td><span class="cmd-badge">ls -t</span> / <span class="cmd-badge">ls -r</span></td><td>الترتيب حسب تاريخ التعديل / عكس الترتيب</td></tr>
+              <tr><td><span class="cmd-badge">ls -ld dir</span></td><td>عرض خصائص المجلد <span class="cmd-badge">Directory</span> نفسه وليس محتوياته</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <hr class="border-slateBorder my-6" />
+
+        <h3 class="text-lg sm:text-xl font-bold text-blue-400 mb-3">18. نسخ ونقل وإعادة تسمية وحذف الملفات (<span class="cmd-badge">cp</span>, <span class="cmd-badge">mv</span>, <span class="cmd-badge">rm</span>)</h3>
+        <div class="mac-window">
+          <div class="mac-header">
+            <div class="mac-dots"><span class="mac-dot bg-[#ff5f56]"></span><span class="mac-dot bg-[#ffbd2e]"></span><span class="mac-dot bg-[#27c93f]"></span></div>
+            <span class="text-xs font-mono text-slate-400">BASH — Copy, Move, Remove</span>
+          </div>
+          <div class="mac-code">
+# 1. Copy (cp)
+cp file.txt backup/
+cp -R docs sauvegarde/
+cp -p /etc/passwd ~/tp1/docs/
+
+# 2. Move / Rename (mv)
+mv notes.txt docs/
+mv notes.txt memo.txt
+
+# 3. Remove (rm / rmdir)
+rm memo.txt
+rm -i memo.txt
+rm -r docs/
+rmdir empty_folder</div>
+        </div>
+
+        <div class="space-y-1.5 mt-3">
+          <div class="token-row">
+            <span class="text-sm text-slate-300">نسخ مجلد كامل مع محتوياته بشكل Recursive</span>
+            <span class="token-pill">cp -R docs sauvegarde/</span>
+          </div>
+          <div class="token-row">
+            <span class="text-sm text-slate-300">الاحتفاظ بخصائص الملف (الصلاحيات والتواريخ) أثناء النسخ</span>
+            <span class="token-pill">cp -p</span>
+          </div>
+          <div class="token-row">
+            <span class="text-sm text-slate-300">حذف مجلد فارغ فقط (يفشل إذا كان المجلد يحتوي على ملفات)</span>
+            <span class="token-pill">rmdir empty_folder</span>
+          </div>
+        </div>
+
+        <div class="callout-box callout-red">
+          <div class="font-bold text-rose-400 text-sm mb-1">تحذير مهم جداً</div>
+          <p class="text-sm text-slate-300">
+            الأمر <span class="cmd-badge">rm</span> لا يرسل الملفات إلى سلة المهملات (<span class="cmd-badge">Corbeille</span>) مثل الواجهات الرسومية بل يحذفها نهائياً. تأكد دائماً من المسار باستعمال <span class="cmd-badge">pwd</span> و <span class="cmd-badge">ls</span> قبل الحذف، واستعمل <span class="cmd-badge">rm -i</span> لطلب التأكيد عند الشك.
+          </p>
+        </div>
+      </article>
+
+      <!-- Section 19, 20, 21 -->
+      <article class="section-card searchable-section">
+        <h3 class="text-lg sm:text-xl font-bold text-blue-400 mb-3">19. قراءة محتوى الملفات & 20. الروابط Links & 21. Inode</h3>
+        <div class="overflow-x-auto">
+          <table class="course-table">
+            <thead>
+              <tr><th>الأمر</th><th>الوظيفة</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="cmd-badge">cat file</span> / <span class="cmd-badge">cat -n file</span></td><td>عرض الملف كاملاً / عرضه مع ترقيم الأسطر</td></tr>
+              <tr><td><span class="cmd-badge">less file</span></td><td>عرض الملف صفحة بصفحة مع إمكانية البحث</td></tr>
+              <tr><td><span class="cmd-badge">head -n 5 /etc/passwd</span></td><td>عرض أول 5 أسطر من الملف</td></tr>
+              <tr><td><span class="cmd-badge">tail -n 3 /etc/passwd</span></td><td>عرض آخر 3 أسطر من الملف</td></tr>
+              <tr><td><span class="cmd-badge">wc -l</span> / <span class="cmd-badge">wc -w</span> / <span class="cmd-badge">wc -c</span></td><td>حساب عدد الأسطر (Lines) / الكلمات (Words) / البايتات (Bytes)</td></tr>
+              <tr><td><span class="cmd-badge">file /bin/ls</span></td><td>تحديد نوع محتوى الملف الفعلي</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          <!-- Links -->
+          <div class="p-4 rounded-xl bg-obsidian border border-slateBorder">
+            <h4 class="font-bold text-cyan-400 mb-2">20. الروابط Links (<span class="cmd-badge">ln</span>)</h4>
+            <div class="space-y-3 text-sm">
+              <div>
+                <div class="font-mono text-emerald-400 font-semibold" dir="ltr">ln original.txt copy.txt (Hard Link)</div>
+                <p class="text-slate-300 text-xs mt-1">اسم إضافي يشير مباشرة إلى نفس الـ <span class="cmd-badge">Inode</span>. إذا حُذف الاسم الأصلي، يبقى الـ Hard Link صالحاً ويحتفظ بالبيانات.</p>
+              </div>
+              <div>
+                <div class="font-mono text-amber-400 font-semibold" dir="ltr">ln -s original.txt shortcut.txt (Symbolic Link)</div>
+                <p class="text-slate-300 text-xs mt-1">رابط رمزي يشير إلى مسار ملف آخر. إذا حُذف الملف الأصلي يصبح الرابط معطلاً (<span class="cmd-badge">Broken Link</span>).</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Inode -->
+          <div class="p-4 rounded-xl bg-obsidian border border-slateBorder">
+            <h4 class="font-bold text-purple-400 mb-2">21. مفهوم File System Inode (<span class="cmd-badge">ls -i</span>)</h4>
+            <p class="text-xs text-slate-300 mb-2">كل ملف في Linux مرتبط بـ <span class="cmd-badge">Inode</span> رقمي يحتوي على جميع بيانات الملف الوصفية:</p>
+            <div class="flex flex-wrap gap-1.5 mb-2" dir="ltr">
+              <span class="cmd-badge">File Type</span>
+              <span class="cmd-badge">Permissions</span>
+              <span class="cmd-badge">Owner & Group</span>
+              <span class="cmd-badge">File Size</span>
+              <span class="cmd-badge">Dates</span>
+              <span class="cmd-badge">Links Count</span>
+              <span class="cmd-badge">Data Blocks</span>
+            </div>
+            <p class="text-xs text-amber-300">⚠️ انتبه: اسم الملف نفسه <strong>لا يوجد</strong> داخل الـ Inode، بل يقوم الـ Directory بربط الاسم برقم الـ Inode. لعرض رقم الـ Inode نستخدم <span class="cmd-badge">ls -i</span>.</p>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- PART 5: Pipes, Redirections, Shell Operators (SECTIONS 22 - 30)   -->
+    <!-- ================================================================= -->
+    <div id="part-5" data-category="cours" class="course-part mb-12">
+      <div class="flex items-center gap-3 mb-6 border-b border-slateBorder pb-4">
+        <span class="w-10 h-10 rounded-xl bg-cyan-600 text-white font-mono font-bold flex items-center justify-center text-lg shadow-lg shadow-cyan-600/30">5</span>
+        <div>
+          <span class="text-xs font-mono text-cyan-400 uppercase">Chapitre 1 & 2 • Sections 22 → 30</span>
+          <h2 class="text-2xl font-extrabold text-white">الجزء الخامس: Pipes, Redirections, Shell Operators & Search</h2>
+        </div>
+      </div>
+
+      <!-- Section 22, 23, 24 -->
+      <article class="section-card searchable-section">
+        <h3 class="text-lg sm:text-xl font-bold text-cyan-400 mb-3">22. تنفيذ عدة Commands & 23. Metacharacters & 24. Quoting</h3>
+        <div class="overflow-x-auto">
+          <table class="course-table">
+            <thead>
+              <tr><th>المعامل (Operator)</th><th>المعنى</th><th>مثال</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="cmd-badge">;</span></td><td>تنفيذ الأمر الثاني بغض النظر عن نتيجة الأول (بالتتابع)</td><td><span class="cmd-badge">mkdir tp; cd tp</span></td></tr>
+              <tr><td><span class="cmd-badge">&amp;&amp;</span></td><td>تنفيذ الأمر الثاني <strong>فقط إذا نجح</strong> الأول</td><td><span class="cmd-badge">mkdir tp &amp;&amp; cd tp</span></td></tr>
+              <tr><td><span class="cmd-badge">||</span></td><td>تنفيذ الأمر الثاني <strong>فقط إذا فشل</strong> الأول</td><td><span class="cmd-badge">cd tp || mkdir tp</span></td></tr>
+              <tr><td><span class="cmd-badge">&amp;</span></td><td>تشغيل الأمر في الخلفية (<span class="cmd-badge">Background</span>)</td><td><span class="cmd-badge">sleep 60 &amp;</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4 class="font-bold text-slate-200 mt-5 mb-2">23. الرموز الخاصة Metacharacters (Wildcards)</h4>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+          <div class="token-row"><span class="text-xs text-slate-300">أي مجموعة من الأحرف (0 أو أكثر)</span><span class="token-pill">ls *.txt</span></div>
+          <div class="token-row"><span class="text-xs text-slate-300">حرف واحد بالضبط</span><span class="token-pill">ls file?.txt</span></div>
+          <div class="token-row"><span class="text-xs text-slate-300">حرف من مجموعة أو مجال</span><span class="token-pill">ls [a-c]*</span></div>
+        </div>
+
+        <h4 class="font-bold text-slate-200 mt-5 mb-2">24. حماية النصوص Quoting (<span class="cmd-badge">' '</span> vs <span class="cmd-badge">" "</span> vs <span class="cmd-badge">\</span>)</h4>
+        <div class="mac-window">
+          <div class="mac-header">
+            <div class="mac-dots"><span class="mac-dot bg-[#ff5f56]"></span><span class="mac-dot bg-[#ffbd2e]"></span><span class="mac-dot bg-[#27c93f]"></span></div>
+            <span class="text-xs font-mono text-slate-400">BASH — Single vs Double Quotes</span>
+          </div>
+          <div class="mac-code">
+a=6
+echo '$a'
+echo "$a"</div>
+          <div class="mac-output">
+            <div class="text-xs font-bold text-emerald-400 mb-1 text-right">النتيجة</div>
+            <pre class="text-xs sm:text-sm text-emerald-300 font-mono">$a
+6</pre>
+          </div>
+        </div>
+        <div class="space-y-1.5 mt-2">
+          <div class="token-row"><span class="text-sm text-slate-300">حماية قوية: لا يتم تفسير المتغيرات <code class="text-amber-300">$a</code> داخلها</span><span class="token-pill">'...' (Single Quotes)</span></div>
+          <div class="token-row"><span class="text-sm text-slate-300">حماية أضعف: يتم تفسير قيمة المتغير <code class="text-emerald-300">$variable</code></span><span class="token-pill">"..." (Double Quotes)</span></div>
+          <div class="token-row"><span class="text-sm text-slate-300">إلغاء المعنى الخاص للحرف التالي فقط</span><span class="token-pill">\ (Backslash)</span></div>
+        </div>
+      </article>
+
+      <!-- Section 25, 26, 27 -->
+      <article class="section-card searchable-section">
+        <h3 class="text-lg sm:text-xl font-bold text-cyan-400 mb-3">25. Standard Streams & 26. Redirection & 27. Pipe <span class="cmd-badge">|</span></h3>
+        
+        <!-- Standard Streams Diagram -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 my-4 text-center">
+          <div class="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/30">
+            <div class="font-mono font-bold text-blue-400 text-base" dir="ltr">stdin (0)</div>
+            <div class="text-xs text-slate-300 mt-1">Standard Input — إدخال البيانات (Keyboard)</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+            <div class="font-mono font-bold text-emerald-400 text-base" dir="ltr">stdout (1)</div>
+            <div class="text-xs text-slate-300 mt-1">Standard Output — عرض النتيجة العادية (Screen)</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30">
+            <div class="font-mono font-bold text-rose-400 text-base" dir="ltr">stderr (2)</div>
+            <div class="text-xs text-slate-300 mt-1">Standard Error — عرض رسائل الأخطاء</div>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="course-table">
+            <thead>
+              <tr><th>الصيغة (Syntax)</th><th>الوظيفة</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="cmd-badge">cmd &gt; file</span></td><td>إرسال <span class="cmd-badge">stdout</span> إلى ملف مع <strong>مسح محتواه السابق</strong></td></tr>
+              <tr><td><span class="cmd-badge">cmd &gt;&gt; file</span></td><td>إضافة <span class="cmd-badge">stdout</span> إلى <strong>نهاية الملف</strong> دون مسح السابق</td></tr>
+              <tr><td><span class="cmd-badge">cmd 2&gt; file</span> / <span class="cmd-badge">cmd 2&gt;&gt; file</span></td><td>إرسال الأخطاء <span class="cmd-badge">stderr</span> إلى ملف (استبدال / إضافة)</td></tr>
+              <tr><td><span class="cmd-badge">cmd &lt; file</span></td><td>قراءة <span class="cmd-badge">Input</span> من ملف</td></tr>
+              <tr><td><span class="cmd-badge">cmd &gt; file 2&gt;&amp;1</span></td><td>إرسال <span class="cmd-badge">stdout</span> و <span class="cmd-badge">stderr</span> معاً إلى نفس الملف</td></tr>
+              <tr><td><span class="cmd-badge">cmd 2&gt;/dev/null</span></td><td>تجاهل رسائل الأخطاء وإخفاؤها (<span class="cmd-badge">/dev/null</span> هو الثقب الأسود في Linux)</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mac-window">
+          <div class="mac-header">
+            <div class="mac-dots"><span class="mac-dot bg-[#ff5f56]"></span><span class="mac-dot bg-[#ffbd2e]"></span><span class="mac-dot bg-[#27c93f]"></span></div>
+            <span class="text-xs font-mono text-slate-400">BASH — Redirections & Pipes</span>
+          </div>
+          <div class="mac-code">
+# Redirections
+ls /etc > etc.txt
+ls /var >> etc.txt
+ls /etc/inexistant > ok.txt 2> erreurs.txt
+ls /etc/inexistant > tout.txt 2>&1
+
+# Pipes (|)
+ls /etc | wc -l
+cat /etc/passwd | grep bash
+cat /etc/passwd | cut -d: -f1</div>
+        </div>
+      </article>
+
+      <!-- Section 28, 29, 30 -->
+      <article class="section-card searchable-section">
+        <h3 class="text-lg sm:text-xl font-bold text-cyan-400 mb-3">28. أوامر معالجة النصوص Text Processing</h3>
+        <div class="mac-window">
+          <div class="mac-header">
+            <div class="mac-dots"><span class="mac-dot bg-[#ff5f56]"></span><span class="mac-dot bg-[#ffbd2e]"></span><span class="mac-dot bg-[#27c93f]"></span></div>
+            <span class="text-xs font-mono text-slate-400">BASH — cut, sort, uniq, tr, head & tail</span>
+          </div>
+          <div class="mac-code">
+# استخراج الحقل الأول أو الأول والثالث باستعمال : كفاصل
+cut -d: -f1 /etc/passwd
+cut -d: -f1,3 /etc/passwd
+
+# الترتيب وإزالة التكرارات المتجاورة وحسابها
+sort names.txt | uniq
+sort names.txt | uniq -c
+
+# تحويل الأحرف الصغيرة لكبيرة أو حذف الرمز :
+tr a-z A-Z < names.txt
+tr -d ':' < /etc/passwd
+
+# عرض الأسطر من 11 إلى 20
+head -n 20 file.txt | tail -n 10</div>
+        </div>
+
+        <hr class="border-slateBorder my-6" />
+
+        <h3 class="text-lg sm:text-xl font-bold text-cyan-400 mb-3">29. البحث داخل المحتوى باستخدام <span class="cmd-badge">grep</span> & 30. البحث عن الملفات باستخدام <span class="cmd-badge">find</span></h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h4 class="font-bold text-emerald-400 mb-2">أهم خيارات <span class="cmd-badge">grep [options] "pattern" file</span></h4>
+            <div class="space-y-1.5">
+              <div class="token-row"><span class="text-xs text-slate-300">عرض رقم السطر المطابق</span><span class="token-pill">-n</span></div>
+              <div class="token-row"><span class="text-xs text-slate-300">تجاهل الفرق بين الأحرف الكبيرة والصغيرة</span><span class="token-pill">-i</span></div>
+              <div class="token-row"><span class="text-xs text-slate-300">عكس النتيجة (الأسطر التي لا تحتوي النمط)</span><span class="token-pill">-v</span></div>
+              <div class="token-row"><span class="text-xs text-slate-300">حساب عدد الأسطر المطابقة / عرض أسماء الملفات فقط</span><span class="token-pill">-c / -l</span></div>
+              <div class="token-row"><span class="text-xs text-slate-300">البحث داخل مجلد بشكل Recursive / تفعيل Extended Regex</span><span class="token-pill">-r / -E</span></div>
+              <div class="token-row"><span class="text-xs text-slate-300">بداية السطر <code class="text-amber-300">^</code> / نهاية السطر <code class="text-amber-300">$</code></span><span class="token-pill">grep "bash$" /etc/passwd</span></div>
+            </div>
+          </div>
+
+          <div>
+            <h4 class="font-bold text-blue-400 mb-2">أهم خيارات <span class="cmd-badge">find path conditions</span></h4>
+            <div class="space-y-1.5">
+              <div class="token-row"><span class="text-xs text-slate-300">البحث حسب الاسم</span><span class="token-pill">-name "*.conf"</span></div>
+              <div class="token-row"><span class="text-xs text-slate-300">البحث عن ملفات عادية / مجلدات</span><span class="token-pill">-type f / -type d</span></div>
+              <div class="token-row"><span class="text-xs text-slate-300">البحث عن عناصر فارغة / أكبر من 10MB</span><span class="token-pill">-empty / -size +10M</span></div>
+              <div class="token-row"><span class="text-xs text-slate-300">عُدّلت خلال آخر 60 دقيقة</span><span class="token-pill">-mmin -60</span></div>
+              <div class="token-row"><span class="text-xs text-slate-300">تنفيذ أمر على كل نتيجة (<code class="text-amber-300">{}</code> النتيجة، <code class="text-amber-300">\;</code> نهاية الأمر)</span><span class="token-pill">-exec cp {} dest/ \;</span></div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- PART 6: صلاحيات الملفات Permissions & umask (SECTIONS 31 - 35)    -->
+    <!-- ================================================================= -->
+    <div id="part-6" data-category="cours" class="course-part mb-12">
+      <div class="flex items-center gap-3 mb-6 border-b border-slateBorder pb-4">
+        <span class="w-10 h-10 rounded-xl bg-emerald-600 text-white font-mono font-bold flex items-center justify-center text-lg shadow-lg shadow-emerald-600/30">6</span>
+        <div>
+          <span class="text-xs font-mono text-emerald-400 uppercase">Chapitre 2 • Sections 31 → 35</span>
+          <h2 class="text-2xl font-extrabold text-white">الجزء السادس: صلاحيات الملفات Permissions و umask</h2>
+        </div>
+      </div>
+
+      <!-- Section 31 & 32 -->
+      <article class="section-card searchable-section">
+        <h3 class="text-lg sm:text-xl font-bold text-emerald-400 mb-3">31. مفهوم Permissions & 32. قراءة نتيجة <span class="cmd-badge">ls -l</span></h3>
+        <p class="text-sm text-slate-300 mb-4">
+          كل <span class="cmd-badge">File</span> أو <span class="cmd-badge">Directory</span> له ثلاث فئات مستخدمين: المالك <span class="cmd-badge">Owner (u)</span>، المجموعة <span class="cmd-badge">Group (g)</span>، والآخرون <span class="cmd-badge">Others (o)</span>.
+        </p>
+
+        <!-- Visual Breakdown of -rwxr-xr-- -->
+        <div class="bg-obsidian border border-slateBorder rounded-2xl p-5 my-4 text-center" dir="ltr">
+          <div class="text-xs font-mono text-slate-400 mb-3" dir="rtl">تفكيك خانات الصلاحيات العشر في <span class="cmd-badge">-rwxr-xr--</span></div>
+          <div class="inline-flex flex-wrap justify-center gap-2 font-mono text-lg sm:text-2xl font-bold">
+            <div class="px-3 py-2 rounded-xl bg-slate-800 border border-slate-600 text-slate-200">
+              <div>-</div>
+              <div class="text-[10px] text-slate-400 font-normal mt-1">Type</div>
+            </div>
+            <div class="px-4 py-2 rounded-xl bg-blue-500/15 border border-blue-500/40 text-blue-300">
+              <div>rwx</div>
+              <div class="text-[10px] text-blue-400 font-normal mt-1">Owner (u) = 7</div>
+            </div>
+            <div class="px-4 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300">
+              <div>r-x</div>
+              <div class="text-[10px] text-emerald-400 font-normal mt-1">Group (g) = 5</div>
+            </div>
+            <div class="px-4 py-2 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-300">
+              <div>r--</div>
+              <div class="text-[10px] text-amber-400 font-normal mt-1">Others (o) = 4</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ls -l full line breakdown -->
+        <div class="mac-window">
+          <div class="mac-header">
+            <div class="mac-dots"><span class="mac-dot bg-[#ff5f56]"></span><span class="mac-dot bg-[#ffbd2e]"></span><span class="mac-dot bg-[#27c93f]"></span></div>
+            <span class="text-xs font-mono text-slate-400">BASH — ls -l memo.txt</span>
+          </div>
+          <div class="mac-code">-rw-r----- 1 fatima dev 900 Oct 31 10:00 memo.txt</div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 mt-3">
+          <div class="token-row"><span class="text-xs text-slate-300">نوع الملف (ملف عادي)</span><span class="token-pill">-</span></div>
+          <div class="token-row"><span class="text-xs text-slate-300">الصلاحيات (640)</span><span class="token-pill">rw-r-----</span></div>
+          <div class="token-row"><span class="text-xs text-slate-300">عدد الروابط (Links)</span><span class="token-pill">1</span></div>
+          <div class="token-row"><span class="text-xs text-slate-300">المالك (Owner)</span><span class="token-pill">fatima</span></div>
+          <div class="token-row"><span class="text-xs text-slate-300">المجموعة (Group)</span><span class="token-pill">dev</span></div>
+          <div class="token-row"><span class="text-xs text-slate-300">الحجم بالبايت (Size)</span><span class="token-pill">900</span></div>
+          <div class="token-row"><span class="text-xs text-slate-300">تاريخ آخر تعديل</span><span class="token-pill">Oct 31 10:00</span></div>
+          <div class="token-row"><span class="text-xs text-slate-300">اسم الملف</span><span class="token-pill">memo.txt</span></div>
+        </div>
+      </article>
+
+      <!-- Section 33: chmod + Interactive Octal Calculator -->
+      <article class="section-card searchable-section">
+        <h3 class="text-lg sm:text-xl font-bold text-emerald-400 mb-3">33. تغيير Permissions باستخدام <span class="cmd-badge">chmod</span> (Symbolic & Octal)</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div>
+            <h4 class="font-bold text-blue-400 mb-2">A. الطريقة الرمزية Symbolic Notation</h4>
+            <p class="text-xs text-slate-300 mb-2">الصيغة: <span class="cmd-badge">chmod [u/g/o/a] [+/-/=] [r/w/x] file</span></p>
+            <div class="space-y-1.5">
+              <div class="token-row"><span class="text-xs text-slate-300">إضافة Execute للمالك</span><span class="token-pill">chmod u+x script.sh</span></div>
+              <div class="token-row"><span class="text-xs text-slate-300">إزالة Write من المجموعة</span><span class="token-pill">chmod g-w file.txt</span></div>
+              <div class="token-row"><span class="text-xs text-slate-300">تحديد Read فقط للآخرين</span><span class="token-pill">chmod o=r file.txt</span></div>
+              <div class="token-row"><span class="text-xs text-slate-300">إعطاء Read و Write للجميع</span><span class="token-pill">chmod a+rw file.txt</span></div>
+            </div>
+          </div>
+
+          <div>
+            <h4 class="font-bold text-emerald-400 mb-2">B. الطريقة الرقمية Octal Notation (<span class="cmd-badge">r=4, w=2, x=1</span>)</h4>
+            <table class="course-table !my-0">
+              <thead>
+                <tr><th>Octal</th><th>Binary</th><th>Permissions</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><span class="cmd-badge">0</span> / <span class="cmd-badge">1</span></td><td><span class="cmd-badge">000</span> / <span class="cmd-badge">001</span></td><td><span class="cmd-badge">---</span> / <span class="cmd-badge">--x</span></td></tr>
+                <tr><td><span class="cmd-badge">2</span> / <span class="cmd-badge">3</span></td><td><span class="cmd-badge">010</span> / <span class="cmd-badge">011</span></td><td><span class="cmd-badge">-w-</span> / <span class="cmd-badge">-wx</span></td></tr>
+                <tr><td><span class="cmd-badge">4</span> / <span class="cmd-badge">5</span></td><td><span class="cmd-badge">100</span> / <span class="cmd-badge">101</span></td><td><span class="cmd-badge">r--</span> / <span class="cmd-badge">r-x</span></td></tr>
+                <tr><td><span class="cmd-badge">6</span> / <span class="cmd-badge">7</span></td><td><span class="cmd-badge">110</span> / <span class="cmd-badge">111</span></td><td><span class="cmd-badge">rw-</span> / <span class="cmd-badge">rwx</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- INTERACTIVE CHMOD CALCULATOR WIDGET -->
+        <div class="bg-obsidian border border-emerald-500/40 rounded-2xl p-5 my-4 no-print">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+            <h4 class="font-bold text-emerald-400 text-sm flex items-center gap-2">
+              <i class="fa-solid fa-calculator"></i>
+              <span>جرب بنفسك: حاسبة الصلاحيات التفاعلية (Interactive chmod Calculator)</span>
+            </h4>
+            <div class="font-mono text-sm bg-slate-900 border border-slate-700 px-3 py-1 rounded-lg" dir="ltr">
+              Command: <span id="calcCmdOutput" class="text-emerald-400 font-bold">chmod 754 file.txt</span> → <span id="calcSymOutput" class="text-cyan-300">-rwxr-xr--</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center" dir="ltr">
+            <!-- Owner -->
+            <div class="p-3 rounded-xl bg-slateCard border border-slateBorder">
+              <div class="font-mono text-xs text-blue-400 font-bold mb-2">Owner (u)</div>
+              <div class="flex justify-center gap-3 text-xs font-mono">
+                <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" class="chmod-cb accent-blue-500" data-who="u" data-val="4" checked onchange="updateChmodCalc()"> r(4)</label>
+                <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" class="chmod-cb accent-blue-500" data-who="u" data-val="2" checked onchange="updateChmodCalc()"> w(2)</label>
+                <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" class="chmod-cb accent-blue-500" data-who="u" data-val="1" checked onchange="updateChmodCalc()"> x(1)</label>
+              </div>
+            </div>
+            <!-- Group -->
+            <div class="p-3 rounded-xl bg-slateCard border border-slateBorder">
+              <div class="font-mono text-xs text-emerald-400 font-bold mb-2">Group (g)</div>
+              <div class="flex justify-center gap-3 text-xs font-mono">
+                <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" class="chmod-cb accent-emerald-500" data-who="g" data-val="4" checked onchange="updateChmodCalc()"> r(4)</label>
+                <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" class="chmod-cb accent-emerald-500" data-who="g" data-val="2" onchange="updateChmodCalc()"> w(2)</label>
+                <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" class="chmod-cb accent-emerald-500" data-who="g" data-val="1" checked onchange="updateChmodCalc()"> x(1)</label>
+              </div>
+            </div>
+            <!-- Others -->
+            <div class="p-3 rounded-xl bg-slateCard border border-slateBorder">
+              <div class="font-mono text-xs text-amber-400 font-bold mb-2">Others (o)</div>
+              <div class="flex justify-center gap-3 text-xs font-mono">
+                <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" class="chmod-cb accent-amber-500" data-who="o" data-val="4" checked onchange="updateChmodCalc()"> r(4)</label>
+                <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" class="chmod-cb accent-amber-500" data-who="o" data-val="2" onchange="updateChmodCalc()"> w(2)</label>
+                <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" class="chmod-cb accent-amber-500" data-who="o" data-val="1" onchange="updateChmodCalc()"> x(1)</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Section 34 & 35 -->
+      <article class="section-card searchable-section">
+        <h3 class="text-lg sm:text-xl font-bold text-emerald-400 mb-3">34. الفرق بين Permissions على File و Directory (نقطة مهمة جداً في الامتحان)</h3>
+        <div class="overflow-x-auto">
+          <table class="course-table">
+            <thead>
+              <tr><th>الصلاحية</th><th>تأثيرها على <span class="cmd-badge">File</span></th><th>تأثيرها على <span class="cmd-badge">Directory</span></th></tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="cmd-badge">r (Read = 4)</span></td><td>قراءة محتوى الملف</td><td>عرض أسماء الملفات داخله (<span class="cmd-badge">ls</span>)</td></tr>
+              <tr><td><span class="cmd-badge">w (Write = 2)</span></td><td>تعديل محتوى الملف</td><td>إنشاء أو حذف أو إعادة تسمية عناصر داخله (بشرط وجود <span class="cmd-badge">x</span>)</td></tr>
+              <tr><td><span class="cmd-badge">x (Execute = 1)</span></td><td>تنفيذ الملف كبرنامج أو Script</td><td>الدخول إلى المجلد (<span class="cmd-badge">cd</span>) واجتيازه</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout-box callout-amber">
+          <div class="font-bold text-amber-400 text-sm mb-1">قاعدة ذهبية في الامتحان</div>
+          <p class="text-sm text-slate-300">
+            حذف ملف يعتمد أساساً على صلاحيات الـ <span class="cmd-badge">Directory</span> الذي يحتويه (<span class="cmd-badge">w + x</span>)، وليس فقط على صلاحيات الملف نفسه!
+          </p>
+        </div>
+
+        <hr class="border-slateBorder my-6" />
+
+        <h3 class="text-lg sm:text-xl font-bold text-emerald-400 mb-3">35. القناع الافتراضي للصلاحيات <span class="cmd-badge">umask</span></h3>
+        <p class="text-sm text-slate-300 mb-3">
+          يحدد <span class="cmd-badge">umask</span> الصلاحيات التي يتم طرحها (حذفها) من الصلاحيات الافتراضية القصوى عند إنشاء <span class="cmd-badge">File</span> جديد (القصوى <span class="cmd-badge">666</span>) أو <span class="cmd-badge">Directory</span> جديد (القصوى <span class="cmd-badge">777</span>).
+        </p>
+
+        <div class="overflow-x-auto">
+          <table class="course-table">
+            <thead>
+              <tr><th>النوع</th><th>Maximum</th><th>مع <span class="cmd-badge">umask 022</span></th><th>مع <span class="cmd-badge">umask 027</span></th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="cmd-badge">File</span></td>
+                <td><span class="cmd-badge">666</span></td>
+                <td><span class="cmd-badge">644</span> (<span class="cmd-badge">rw-r--r--</span>)</td>
+                <td><span class="cmd-badge">640</span> (<span class="cmd-badge">rw-r-----</span>)</td>
+              </tr>
+              <tr>
+                <td><span class="cmd-badge">Directory</span></td>
+                <td><span class="cmd-badge">777</span></td>
+                <td><span class="cmd-badge">755</span> (<span class="cmd-badge">rwxr-xr-x</span>)</td>
+                <td><span class="cmd-badge">750</span> (<span class="cmd-badge">rwxr-x---</span>)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- PART 7: Users و Groups وإدارة الحسابات (SECTIONS 36 - 46)         -->
+    <!-- ================================================================= -->
+    <div id="part-7" data-category="cours" class="course-part mb-12">
+      <div class="flex items-center gap-3 mb-6 border-b border-slateBorder pb-4">
+        <span class="w-10 h-10 rounded-xl bg-purple-600 text-white font-mono font-bold flex items-center justify-center text-lg shadow-lg shadow-purple-600/30">7</span>
+        <div>
+          <span class="text-xs font-mono text-purple-400 uppercase">Chapitre 2 • Sections 36 → 46</span>
+          <h2 class="text-2xl font-extrabold text-white">الجزء السابع: Users و Groups وإدارة الحسابات</h2>
+        </div>
+      </div>
+
+      <!-- Section 36, 37, 38, 39 -->
+      <article class="section-card searchable-section">
+        <h3 class="text-lg sm:text-xl font-bold text-purple-400 mb-3">36. مفهوم UID و GID & 37. التحقق من الهوية & 38. ملفات إدارة المستخدمين</h3>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+          <div class="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30">
+            <div class="font-mono font-bold text-rose-400" dir="ltr">UID = 0 (Superuser)</div>
+            <div class="text-xs text-slate-300 mt-1">حساب <span class="cmd-badge">root</span> بصلاحيات مطلقة</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30">
+            <div class="font-mono font-bold text-amber-400" dir="ltr">UID = 1 → 999</div>
+            <div class="text-xs text-slate-300 mt-1"><span class="cmd-badge">System Accounts</span> مثل <span class="cmd-badge">sshd, www-data</span></div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+            <div class="font-mono font-bold text-emerald-400" dir="ltr">UID ≥ 1000</div>
+            <div class="text-xs text-slate-300 mt-1"><span class="cmd-badge">Human Users</span> مثل <span class="cmd-badge">ali, sara</span></div>
+          </div>
+        </div>
+
+        <div class="mac-window">
+          <div class="mac-header">
+            <div class="mac-dots"><span class="mac-dot bg-[#ff5f56]"></span><span class="mac-dot bg-[#ffbd2e]"></span><span class="mac-dot bg-[#27c93f]"></span></div>
+            <span class="text-xs font-mono text-slate-400">BASH — Identity & /etc/passwd Breakdown</span>
+          </div>
+          <div class="mac-code">
+id
+getent passwd ali</div>
+          <div class="mac-output">
+            <div class="text-xs font-bold text-emerald-400 mb-1 text-right">النتيجة</div>
+            <pre class="text-xs sm:text-sm text-emerald-300 font-mono">uid=1001(ali) gid=1001(ali) groups=1001(ali),27(sudo),1500(dev)
+ali:x:1001:1001:Ali Salmi:/home/ali:/bin/bash</pre>
+          </div>
+        </div>
+
+        <h4 class="font-bold text-slate-200 mt-5 mb-2">تفكيك الحقول السبعة لملف <span class="cmd-badge">/etc/passwd</span>:</h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+          <div class="token-row"><span class="text-xs text-slate-300">1. Login Name</span><span class="token-pill">ali</span></div>
+          <div class="token-row"><span class="text-xs text-slate-300">2. Password في shadow</span><span class="token-pill">x</span></div>
+          <div class="token-row"><span class="text-xs text-slate-300">3. UID</span><span class="token-pill">1001</span></div>
+          <div class="token-row"><span class="text-xs text-slate-300">4. Primary GID</span><span class="token-pill">1001</span></div>
+          <div class="token-row"><span class="text-xs text-slate-300">5. GECOS / Full Name</span><span class="token-pill">Ali Salmi</span></div>
+          <div class="token-row"><span class="text-xs text-slate-300">6. Home Directory</span><span class="token-pill">/home/ali</span></div>
+          <div class="token-row"><span class="text-xs text-slate-300">7. Login Shell</span><span class="token-pill">/bin/bash</span></div>
+        </div>
+
+        <div class="callout-box callout-blue mt-4">
+          <div class="font-bold text-blue-400 text-sm mb-1">ملف <span class="cmd-badge">/etc/shadow</span> وملف <span class="cmd-badge">/etc/group</span></div>
+          <p class="text-sm text-slate-300">
+            • <span class="cmd-badge">/etc/shadow</span>: محمي ولا يقرؤه إلا <span class="cmd-badge">root</span>، ويخزن بصمة كلمة المرور المشفرة (<span class="cmd-badge">$1$</span> MD5، <span class="cmd-badge">$6$</span> SHA-512، <span class="cmd-badge">$y$</span> yescrypt، أو <span class="cmd-badge">! / *</span> للحساب المقفل) وتواريخ الصلاحية.<br>
+            • <span class="cmd-badge">/etc/group</span>: يضم <span class="cmd-badge">group_name:x:GID:secondary_members</span> (مثال: <span class="cmd-badge">dev:x:1500:alice,bob</span>).
+          </p>
+        </div>
+      </article>
+
+      <!-- Section 40, 41, 42, 43, 44, 45, 46 -->
+      <article class="section-card searchable-section">
+        <h3 class="text-lg sm:text-xl font-bold text-purple-400 mb-3">40–46. أوامر إدارة المستخدمين والمجموعات وكلمات المرور</h3>
+
+        <div class="mac-window">
+          <div class="mac-header">
+            <div class="mac-dots"><span class="mac-dot bg-[#ff5f56]"></span><span class="mac-dot bg-[#ffbd2e]"></span><span class="mac-dot bg-[#27c93f]"></span></div>
+            <span class="text-xs font-mono text-slate-400">BASH — useradd, usermod, userdel, groupadd, passwd, chage</span>
+          </div>
+          <div class="mac-code">
+# 40. إنشاء مستخدم جديد مع Home Directory و Bash
+sudo useradd -m -s /bin/bash -c "Sara Ahmed" -G dev sara
+sudo passwd sara
+
+# 41. تعديل حساب مستخدم (إضافة لمجموعة دون حذف المجموعات السابقة)
+sudo usermod -aG web ali
+
+# 42. أرشفة وحذف مستخدم مع مجلده الشخصي
+sudo tar czf ali.tgz /home/ali
+sudo userdel -r ali
+
+# 43. إدارة المجموعات (Groups)
+sudo groupadd -g 1500 dev
+sudo gpasswd -a ali dev
+
+# 44 & 45. إدارة صلاحية كلمة المرور وقفل الحساب
+sudo chage -m 1 -M 90 -W 7 ali
+sudo usermod -L ali
+sudo usermod -U ali
+
+# 46. سجلات الدخول والمحاولات الفاشلة
+last -n 5 ali
+sudo grep "Failed password" /var/log/auth.log | wc -l</div>
+        </div>
+
+        <div class="callout-box callout-red">
+          <div class="font-bold text-rose-400 text-sm mb-1">خطأ شائع جداً في الامتحان: <span class="cmd-badge">usermod -G</span> مقابل <span class="cmd-badge">usermod -aG</span></div>
+          <p class="text-sm text-slate-300">
+            • <span class="cmd-badge">usermod -G web ali</span>: <strong>يستبدل</strong> قائمة Secondary Groups بالكامل، فيفقد المستخدم عضويته السابقة في <span class="cmd-badge">dev</span>!<br>
+            • <span class="cmd-badge">usermod -aG web ali</span>: الخيار <span class="cmd-badge">-a</span> (append) <strong>يضيف</strong> المجموعة الجديدة ويحافظ على المجموعات السابقة.
+          </p>
+        </div>
+      </article>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- PART 8: إدارة الصلاحيات المتقدمة (SECTIONS 47 - 53)               -->
+    <!-- ================================================================= -->
+    <div id="part-8" data-category="cours" class="course-part mb-12">
+      <div class="flex items-center gap-3 mb-6 border-b border-slateBorder pb-4">
+        <span class="w-10 h-10 rounded-xl bg-rose-600 text-white font-mono font-bold flex items-center justify-center text-lg shadow-lg shadow-rose-600/30">8</span>
+        <div>
+          <span class="text-xs font-mono text-rose-400 uppercase">Chapitre 2 • Sections 47 → 53</span>
+          <h2 class="text-2xl font-extrabold text-white">الجزء الثامن: إدارة الصلاحيات المتقدمة (sudo, chown, SUID/SGID/Sticky, ACL)</h2>
+        </div>
+      </div>
+
+      <!-- Section 47, 48, 49, 50 -->
+      <article class="section-card searchable-section">
+        <h3 class="text-lg sm:text-xl font-bold text-rose-400 mb-3">47. المقارنة بين <span class="cmd-badge">su</span> و <span class="cmd-badge">sudo</span> & 48. ملف <span class="cmd-badge">/etc/sudoers</span></h3>
+        <div class="overflow-x-auto">
+          <table class="course-table">
+            <thead>
+              <tr><th>وجه المقارنة</th><th><span class="cmd-badge">su</span> (Switch User)</th><th><span class="cmd-badge">sudo</span></th></tr>
+            </thead>
+            <tbody>
+              <tr><td>الوظيفة والنطاق</td><td>فتح <span class="cmd-badge">Shell</span> كامل بحساب آخر</td><td>تنفيذ <span class="cmd-badge">Command</span> محدد بصلاحيات إدارية</td></tr>
+              <tr><td>كلمة المرور المطلوبة</td><td>كلمة مرور <strong>الحساب الهدف</strong> (مثل <span class="cmd-badge">root</span>)</td><td>كلمة مرور <strong>المستخدم الحالي</strong> غالباً</td></tr>
+              <tr><td>التحكم والتتبع</td><td>صلاحيات الحساب الهدف كاملة</td><td>مضبوطة عبر <span class="cmd-badge">/etc/sudoers</span> ويتم تسجيل كل أمر في السجلات</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mac-window">
+          <div class="mac-header">
+            <div class="mac-dots"><span class="mac-dot bg-[#ff5f56]"></span><span class="mac-dot bg-[#ffbd2e]"></span><span class="mac-dot bg-[#27c93f]"></span></div>
+            <span class="text-xs font-mono text-slate-400">BASH — sudoers & chown / chgrp</span>
+          </div>
+          <div class="mac-code">
+# تحرير ملف sudoers بأمان مع فحص Syntax
+sudo visudo
+
+# قاعدة داخل /etc/sudoers:
+ali ALL=(ALL:ALL) /usr/bin/apt
+
+# 49. تغيير المالك والمجموعة (chown & chgrp)
+sudo chown ali file.txt
+sudo chown ali:dev file.txt
+sudo chown -R ali:dev projet/
+chgrp dev file.txt</div>
+        </div>
+
+        <h4 class="font-bold text-slate-200 mt-5 mb-2">50. كيف يقرر Linux هل يسمح بالوصول؟ (ترتيب فحص الـ Kernel)</h4>
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-2.5 text-center my-3">
+          <div class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30">
+            <div class="font-bold text-rose-400 text-xs">الخطوة 1</div>
+            <div class="text-xs text-slate-200 mt-1">هل العملية تعمل كـ <span class="cmd-badge">root (UID 0)</span>؟</div>
+          </div>
+          <div class="p-3 rounded-xl bg-blue-500/10 border border-blue-500/30">
+            <div class="font-bold text-blue-400 text-xs">الخطوة 2</div>
+            <div class="text-xs text-slate-200 mt-1">هل المستخدم هو <span class="cmd-badge">Owner (u)</span>؟ تطبق صلاحيات u ويتوقف الفحص</div>
+          </div>
+          <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+            <div class="font-bold text-emerald-400 text-xs">الخطوة 3</div>
+            <div class="text-xs text-slate-200 mt-1">هل هو عضو في <span class="cmd-badge">Group (g)</span>؟ تطبق صلاحيات g ويتوقف الفحص</div>
+          </div>
+          <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
+            <div class="font-bold text-amber-400 text-xs">الخطوة 4</div>
+            <div class="text-xs text-slate-200 mt-1">وإلا تطبق صلاحيات <span class="cmd-badge">Others (o)</span></div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Section 51, 52, 53 -->
+      <article class="section-card searchable-section">
+        <h3 class="text-lg sm:text-xl font-bold text-rose-400 mb-3">51. الصلاحيات الخاصة SUID, SGID, Sticky Bit & 52. ACL & 53. التشخيص</h3>
+        <div class="overflow-x-auto">
+          <table class="course-table">
+            <thead>
+              <tr><th>الصلاحية الخاصة</th><th>القيمة (Octal)</th><th>الوظيفة والمثال</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="cmd-badge">SUID (u+s)</span></td>
+                <td><span class="cmd-badge">4000</span></td>
+                <td>يجعل البرنامج يعمل بهوية مالكه عند التنفيذ. مثال: <span class="cmd-badge">/usr/bin/passwd</span> (<span class="cmd-badge">-rwsr-xr-x</span>)</td>
+              </tr>
+              <tr>
+                <td><span class="cmd-badge">SGID (g+s)</span></td>
+                <td><span class="cmd-badge">2000</span></td>
+                <td>على مجلد مشترك: يجعل الملفات الجديدة ترث مجموعة المجلد تلقائياً (<span class="cmd-badge">chmod 2770 shared/</span> → <span class="cmd-badge">drwxrws---</span>)</td>
+              </tr>
+              <tr>
+                <td><span class="cmd-badge">Sticky Bit (+t)</span></td>
+                <td><span class="cmd-badge">1000</span></td>
+                <td>على مجلد مشترك مثل <span class="cmd-badge">/tmp</span>: يمنع المستخدم العادي من حذف ملفات الآخرين (<span class="cmd-badge">chmod 1777 shared/</span> → <span class="cmd-badge">drwxrwxrwt</span>)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mac-window">
+          <div class="mac-header">
+            <div class="mac-dots"><span class="mac-dot bg-[#ff5f56]"></span><span class="mac-dot bg-[#ffbd2e]"></span><span class="mac-dot bg-[#27c93f]"></span></div>
+            <span class="text-xs font-mono text-slate-400">BASH — ACL (setfacl / getfacl) & Diagnostics</span>
+          </div>
+          <div class="mac-code">
+# 52. Access Control Lists (ACL)
+setfacl -m u:ali:r file.txt
+setfacl -m g:dev:rw file.txt
+setfacl -m d:g:dev:rwx shared/
+getfacl file.txt
+setfacl -x u:ali file.txt
+setfacl -b file.txt
+
+# 53. أوامر التشخيص الإضافية
+ps -ef
+ps -p $$
+namei -l /home/ali/docs/file.txt
+sudo chattr +i file.txt
+sudo chattr -i file.txt
+sudo find / -nouser -o -nogroup 2>/dev/null</div>
+        </div>
+      </article>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- PART 9: التطبيق العملي الشامل TP1 (SECTIONS 54 - 62)             -->
+    <!-- ================================================================= -->
+    <div id="part-9" data-category="tp" class="course-part mb-12">
+      <div class="flex items-center gap-3 mb-6 border-b border-slateBorder pb-4">
+        <span class="w-10 h-10 rounded-xl bg-emerald-600 text-white font-mono font-bold flex items-center justify-center text-lg shadow-lg shadow-emerald-600/30">9</span>
+        <div>
+          <span class="text-xs font-mono text-emerald-400 uppercase">Travaux Pratiques • Sections 54 → 62</span>
+          <h2 class="text-2xl font-extrabold text-white">الجزء التاسع: التطبيق العملي الشامل TP1 (Ubuntu 24.04 LTS)</h2>
+        </div>
+      </div>
+
+      <!-- TP Setup + Ex 1, 2, 3, 4 -->
+      <article class="section-card searchable-section">
+        <h3 class="text-lg sm:text-xl font-bold text-emerald-400 mb-3">54. تجهيز بيئة العمل & التمارين 1 إلى 4 من TP1</h3>
+        <div class="mac-window">
+          <div class="mac-header">
+            <div class="mac-dots"><span class="mac-dot bg-[#ff5f56]"></span><span class="mac-dot bg-[#ffbd2e]"></span><span class="mac-dot bg-[#27c93f]"></span></div>
+            <span class="text-xs font-mono text-slate-400">TP1 — Setup & Exercices 1, 2, 3, 4</span>
+          </div>
+          <div class="mac-code">
+# 54. تحديث النظام وتثبيت الأدوات وإنشاء مجلد العمل
+sudo apt update && sudo apt upgrade -y
+sudo apt install -y man-db manpages manpages-fr file less tree openssh-server
+mkdir -p ~/tp1
+
+# 55. Exercice 1 — Découverte du système
+uname -a && uname -s && uname -r && uname -m
+cat /etc/os-release
+whoami && id && groups && hostname && uptime -p
+type cd && type ls && type ll
+echo $SHELL
+man ls
+man 5 passwd
+
+# 56. Exercice 2 — Navigation et Arborescence
+pwd
+cd /usr/share/doc && pwd
+cd ~   # أو cd أو cd /home/username
+cd /var/log && cd ../../etc && cd -
+ls /
+ls -alht ~
+
+# 57. Exercice 3 — Création et Manipulation
+mkdir -p ~/tp1/docs ~/tp1/scripts ~/tp1/sauvegarde ~/tp1/docs/2026/rapports
+touch ~/tp1/docs/notes.txt ~/tp1/docs/liste.txt ~/tp1/docs/rapport{1..5}.md
+cp -p /etc/passwd /etc/group ~/tp1/docs/
+mv ~/tp1/docs/notes.txt ~/tp1/docs/memo.txt
+mv ~/tp1/docs/*.md ~/tp1/docs/2026/rapports/
+cp -R ~/tp1/docs ~/tp1/sauvegarde/
+rm -ri ~/tp1/sauvegarde/docs/2026
+tree ~/tp1
+
+# 58. Exercice 4 — Consultation des fichiers
+cat -n ~/tp1/docs/passwd
+head -n 5 ~/tp1/docs/passwd
+tail -n 3 ~/tp1/docs/passwd
+wc -l -w -c ~/tp1/docs/passwd
+file /bin/ls && file /etc/hostname
+less /etc/services   # ثم /ssh ثم n ثم q</div>
+        </div>
+      </article>
+
+      <!-- TP Ex 5, 6, 7, 8 -->
+      <article class="section-card searchable-section">
+        <h3 class="text-lg sm:text-xl font-bold text-emerald-400 mb-3">59–62. التمارين 5 إلى 8 من TP1 (Permissions, Redirections, find, grep)</h3>
+        <div class="mac-window">
+          <div class="mac-header">
+            <div class="mac-dots"><span class="mac-dot bg-[#ff5f56]"></span><span class="mac-dot bg-[#ffbd2e]"></span><span class="mac-dot bg-[#27c93f]"></span></div>
+            <span class="text-xs font-mono text-slate-400">TP1 — Exercices 5, 6, 7, 8</span>
+          </div>
+          <div class="mac-code">
+# 59. Exercice 5 — Permissions & umask
+ls -l ~/tp1/docs/memo.txt
+chmod 640 ~/tp1/docs/memo.txt
+chmod u+x ~/tp1/docs/memo.txt
+
+echo "echo Bonjour" > ~/tp1/scripts/bonjour.sh
+chmod u+x ~/tp1/scripts/bonjour.sh
+~/tp1/scripts/bonjour.sh
+
+chmod u-x ~/tp1/docs
+cd ~/tp1/docs   # Permission denied!
+chmod u+x ~/tp1/docs
+
+umask 027
+touch ~/tp1/test.txt && mkdir ~/tp1/testdir
+ls -l ~/tp1/test.txt && ls -ld ~/tp1/testdir  # 640 & 750
+
+# 60. Exercice 6 — Redirections et Pipes
+cd ~/tp1
+ls /etc > etc.txt && ls /var >> etc.txt
+ls /etc/inexistant > ok.txt 2> erreurs.txt
+ls /etc/inexistant > tout.txt 2>&1
+ls /etc/inexistant 2>/dev/null
+ls /etc | wc -l
+cut -d: -f7 /etc/passwd | sort | uniq -c
+
+# 61. Exercice 7 — Recherche avec find
+find /etc -type f -name "*.conf" 2>/dev/null
+find ~ -type d
+find ~ -type f -empty
+find /usr -type f -size +10M 2>/dev/null
+find ~/tp1 -type f -mmin -60
+find ~/tp1/docs -type f -name "*.md" -exec cp {} ~/tp1/sauvegarde/ \;
+
+# 62. Exercice 8 — Recherche avec grep
+grep -n "bash" /etc/passwd
+grep -vE '(/nologin|/false)$' /etc/passwd | wc -l
+grep -i "port" /etc/ssh/sshd_config | grep -vE '^#'
+grep -rl "localhost" /etc 2>/dev/null</div>
+        </div>
+      </article>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- PART 10: تمارين TD محلولة (SECTIONS 63 - 68)                      -->
+    <!-- ================================================================= -->
+    <div id="part-10" data-category="td" class="course-part mb-12">
+      <div class="flex items-center gap-3 mb-6 border-b border-slateBorder pb-4">
+        <span class="w-10 h-10 rounded-xl bg-purple-600 text-white font-mono font-bold flex items-center justify-center text-lg shadow-lg shadow-purple-600/30">10</span>
+        <div>
+          <span class="text-xs font-mono text-purple-400 uppercase">Travaux Dirigés • Sections 63 → 68</span>
+          <h2 class="text-2xl font-extrabold text-white">الجزء العاشر: TD — تطبيقات محلولة على Users و Permissions</h2>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- TD 1 -->
+        <article class="section-card searchable-section !mb-0">
+          <h3 class="text-base font-bold text-purple-400 mb-2">63. TD 1 — قراءة سطر من <span class="cmd-badge">/etc/passwd</span></h3>
+          <div class="mac-code !p-2.5 rounded-lg bg-obsidian border border-slateBorder text-xs mb-3">ali:x:1002:1002:Ali Ahmed:/home/ali:/bin/bash</div>
+          <ul class="text-sm text-slate-300 space-y-1.5">
+            <li>• <strong>Username & UID:</strong> الاسم <span class="cmd-badge">ali</span> والرقم <span class="cmd-badge">1002</span>.</li>
+            <li>• <strong>نوع الحساب:</strong> <span class="cmd-badge">Human User</span> لأن <span class="cmd-badge">UID ≥ 1000</span>.</li>
+            <li>• <strong>Home Directory:</strong> <span class="cmd-badge">/home/ali</span>.</li>
+            <li>• <strong>تسجيل الدخول وكلمة المرور:</strong> يستطيع الدخول لأن الـ Shell هو <span class="cmd-badge">/bin/bash</span>، والرمز <span class="cmd-badge">x</span> يعني أن الـ Hash محفوظ في <span class="cmd-badge">/etc/shadow</span>.</li>
+          </ul>
+        </article>
+
+        <!-- TD 2 -->
+        <article class="section-card searchable-section !mb-0">
+          <h3 class="text-base font-bold text-purple-400 mb-2">64. TD 2 — تحليل مخرجات الأمر <span class="cmd-badge">id</span></h3>
+          <div class="mac-code !p-2.5 rounded-lg bg-obsidian border border-slateBorder text-xs mb-3">uid=1001(ali) gid=1001(ali) groups=1001(ali),27(sudo),1500(dev)</div>
+          <ul class="text-sm text-slate-300 space-y-1.5">
+            <li>• <strong>UID:</strong> <span class="cmd-badge">1001</span></li>
+            <li>• <strong>Primary Group:</strong> <span class="cmd-badge">ali (GID 1001)</span></li>
+            <li>• <strong>Secondary Groups:</strong> <span class="cmd-badge">sudo</span> و <span class="cmd-badge">dev</span></li>
+            <li>• <strong>هل يستطيع استعمال sudo؟</strong> نعم، لانتمائه للمجموعة <span class="cmd-badge">sudo</span>.</li>
+          </ul>
+        </article>
+
+        <!-- TD 3 & 4 -->
+        <article class="section-card searchable-section !mb-0">
+          <h3 class="text-base font-bold text-purple-400 mb-2">65 & 66. TD 3 & TD 4 — إنشاء مستخدم وإضافته لمجموعة</h3>
+          <div class="mac-code !p-3 rounded-lg bg-obsidian border border-slateBorder text-xs mb-3"># TD 3: إنشاء حساب Sara مع Home و Bash
+sudo useradd -m -s /bin/bash sara
+sudo passwd sara
+id sara && getent passwd sara
+
+# TD 4: إضافة Fatima إلى web دون حذف عضويتها في dev
+sudo usermod -aG web fatima
+# أو: sudo gpasswd -a fatima web</div>
+          <p class="text-xs text-slate-400">تنبيه: استعمال <span class="cmd-badge">usermod -G web fatima</span> بدون <span class="cmd-badge">-a</span> يحذف عضويتها القديمة في <span class="cmd-badge">dev</span>.</p>
+        </article>
+
+        <!-- TD 5 & 6 -->
+        <article class="section-card searchable-section !mb-0">
+          <h3 class="text-base font-bold text-purple-400 mb-2">67 & 68. TD 5 (su vs sudo) & TD 6 (تحليل الصلاحيات)</h3>
+          <div class="mac-code !p-2.5 rounded-lg bg-obsidian border border-slateBorder text-xs mb-3">-rw-r----- 1 fatima dev 900 notes.txt</div>
+          <ul class="text-sm text-slate-300 space-y-1.5">
+            <li>• <strong>Fatima (Owner):</strong> تمتلك <span class="cmd-badge">rw-</span> ← قراءة وتعديل.</li>
+            <li>• <strong>Ali (عضو في dev):</strong> يمتلك <span class="cmd-badge">r--</span> ← قراءة فقط (لا يستطيع التعديل).</li>
+            <li>• <strong>Ahmed (Others):</strong> يمتلك <span class="cmd-badge">---</span> ← لا يستطيع القراءة ولا التعديل.</li>
+            <li>• <strong>للسماح لـ Ali بالتعديل:</strong> ننفذ <span class="cmd-badge">chmod g+w notes.txt</span>.</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- PART 11: ملخص شامل للحفظ قبل الامتحان + اختبار ذاتي (69 - 71)     -->
+    <!-- ================================================================= -->
+    <div id="part-11" data-category="exam" class="course-part mb-12">
+      <div class="flex items-center gap-3 mb-6 border-b border-slateBorder pb-4">
+        <span class="w-10 h-10 rounded-xl bg-amber-500 text-obsidian font-mono font-bold flex items-center justify-center text-lg shadow-lg shadow-amber-500/30">11</span>
+        <div>
+          <span class="text-xs font-mono text-amber-400 uppercase">Révision & Quiz Interactif • Sections 69 → 71</span>
+          <h2 class="text-2xl font-extrabold text-white">الجزء الحادي عشر: ملخص شامل للحفظ قبل الامتحان + اختبار ذاتي</h2>
+        </div>
+      </div>
+
+      <!-- Section 69 & 70 -->
+      <article class="section-card searchable-section">
+        <h3 class="text-lg sm:text-xl font-bold text-amber-400 mb-3">69. جدول أهم الأوامر (Master Commands Cheat Sheet)</h3>
+        <div class="overflow-x-auto">
+          <table class="course-table">
+            <thead>
+              <tr><th>المجال</th><th>الأوامر الأساسية</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Session & Navigation</td><td><span class="cmd-badge">whoami</span> <span class="cmd-badge">su</span> <span class="cmd-badge">exit</span> <span class="cmd-badge">pwd</span> <span class="cmd-badge">cd</span> <span class="cmd-badge">ls</span></td></tr>
+              <tr><td>Creation, Copy, Delete</td><td><span class="cmd-badge">touch</span> <span class="cmd-badge">mkdir -p</span> <span class="cmd-badge">cp -R/-p</span> <span class="cmd-badge">mv</span> <span class="cmd-badge">rm -r/-i</span> <span class="cmd-badge">rmdir</span></td></tr>
+              <tr><td>Read & Info</td><td><span class="cmd-badge">cat -n</span> <span class="cmd-badge">less</span> <span class="cmd-badge">head</span> <span class="cmd-badge">tail</span> <span class="cmd-badge">wc</span> <span class="cmd-badge">file</span> <span class="cmd-badge">ln -s</span></td></tr>
+              <tr><td>Search & Text</td><td><span class="cmd-badge">find</span> <span class="cmd-badge">grep</span> <span class="cmd-badge">cut</span> <span class="cmd-badge">sort</span> <span class="cmd-badge">uniq</span> <span class="cmd-badge">tr</span></td></tr>
+              <tr><td>Redirection & Pipe</td><td><span class="cmd-badge">&gt;</span> <span class="cmd-badge">&gt;&gt;</span> <span class="cmd-badge">2&gt;</span> <span class="cmd-badge">2&gt;&amp;1</span> <span class="cmd-badge">2&gt;/dev/null</span> <span class="cmd-badge">|</span></td></tr>
+              <tr><td>Permissions & Owner</td><td><span class="cmd-badge">chmod</span> <span class="cmd-badge">umask</span> <span class="cmd-badge">chown</span> <span class="cmd-badge">chgrp</span> <span class="cmd-badge">getfacl</span> <span class="cmd-badge">setfacl</span></td></tr>
+              <tr><td>Users, Groups & Auth</td><td><span class="cmd-badge">useradd</span> <span class="cmd-badge">usermod -aG</span> <span class="cmd-badge">userdel -r</span> <span class="cmd-badge">groupadd</span> <span class="cmd-badge">gpasswd</span> <span class="cmd-badge">passwd</span> <span class="cmd-badge">chage</span> <span class="cmd-badge">sudo</span> <span class="cmd-badge">visudo</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 class="text-lg sm:text-xl font-bold text-amber-400 mt-6 mb-3">70. أهم 8 قواعد ومقارنات يجب عدم الخلط بينها في الامتحان</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="token-row"><span class="text-xs text-slate-300">يبدأ من <code class="text-emerald-400">/</code> مقابل يبدأ من المجلد الحالي</span><span class="token-pill">1. Absolute vs Relative</span></div>
+          <div class="token-row"><span class="text-xs text-slate-300">يمسح المحتوى السابق مقابل يضيف للنهاية</span><span class="token-pill">2. &gt; vs &gt;&gt;</span></div>
+          <div class="token-row"><span class="text-xs text-slate-300">دائماً <code class="text-cyan-300">;</code> / عند النجاح <code class="text-emerald-300">&amp;&amp;</code> / عند الفشل <code class="text-rose-300">||</code></span><span class="token-pill">3. ; vs &amp;&amp; vs ||</span></div>
+          <div class="token-row"><span class="text-xs text-slate-300">ينسخ مع بقاء الأصل مقابل ينقل أو يعيد التسمية</span><span class="token-pill">4. cp vs mv</span></div>
+          <div class="token-row"><span class="text-xs text-slate-300">يحذف المجلد ومحتوياته مقابل يحذف مجلداً فارغاً فقط</span><span class="token-pill">5. rm -r vs rmdir</span></div>
+          <div class="token-row"><span class="text-xs text-slate-300">الصلاحيات مقابل المالك مقابل المجموعة</span><span class="token-pill">6. chmod / chown / chgrp</span></div>
+          <div class="token-row"><span class="text-xs text-slate-300">يستبدل المجموعات مقابل يضيف مع الاحتفاظ بالسابق</span><span class="token-pill">7. -G vs -aG</span></div>
+          <div class="token-row"><span class="text-xs text-slate-300">يفتح Shell بهوية أخرى مقابل ينفذ أمراً بصلاحيات محددة</span><span class="token-pill">8. su vs sudo</span></div>
+        </div>
+      </article>
+
+      <!-- Section 71: Interactive 8-Question Quiz -->
+      <article class="section-card searchable-section border-amber-500/40">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+          <div>
+            <h3 class="text-xl font-bold text-amber-400">71. اختبار ذاتي تفاعلي سريع (8 أسئلة شاملة)</h3>
+            <p class="text-sm text-slate-300 mt-1">حاول الإجابة عن جميع الأسئلة ثم اضغط على <strong>"تصحيح الإجابات"</strong> لمعرفة نتيجتك الفورية.</p>
+          </div>
+          <div id="quizScoreBadge" class="hidden px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-mono font-bold text-base">
+            النتيجة: 0 / 8
+          </div>
+        </div>
+
+        <div id="quizContainer" class="space-y-4"></div>
+
+        <div class="flex flex-wrap items-center gap-3 mt-6">
+          <button onclick="gradeQuiz()" class="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white font-bold text-sm shadow-lg shadow-blue-600/25 transition flex items-center gap-2">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>تصحيح الإجابات</span>
+          </button>
+          <button onclick="resetQuiz()" class="px-5 py-3 rounded-xl bg-slateSurface hover:bg-slate-700 border border-slateBorder text-slate-200 font-semibold text-sm transition flex items-center gap-2">
+            <i class="fa-solid fa-rotate-right"></i>
+            <span>إعادة الاختبار</span>
+          </button>
+        </div>
+      </article>
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-slateBorder py-8 text-center text-xs text-slate-400 no-print">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div>SYS101 • الدرس الشامل في نظام التشغيل Linux — مصمم بنفس الهوية البصرية لملف JavaScript-pt1.pdf</div>
+      <div class="font-mono" dir="ltr">Ubuntu 24.04 LTS • Cours + TP1 + TD</div>
+    </div>
+  </footer>
+
+  <!-- JAVASCRIPT LOGIC: Interactive Quiz, Chmod Calculator, Search & Copy -->
+  <script>
+    // 1. Copy Terminal Code
+    function copyCode(btn) {
+      const codeEl = btn.closest('.mac-window').querySelector('.mac-code');
+      const text = codeEl ? codeEl.innerText : '';
+      const temp = document.createElement('textarea');
+      temp.value = text;
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand('copy');
+      document.body.removeChild(temp);
+      const original = btn.innerText;
+      btn.innerText = 'Copied ✓';
+      btn.classList.add('text-emerald-400');
+      setTimeout(() => {
+        btn.innerText = original;
+        btn.classList.remove('text-emerald-400');
+      }, 1500);
+    }
+
+    // 2. Interactive Chmod Octal Calculator
+    function updateChmodCalc() {
+      const cbs = document.querySelectorAll('.chmod-cb');
+      let u = 0, g = 0, o = 0;
+      cbs.forEach(cb => {
+        if (cb.checked) {
+          const val = parseInt(cb.dataset.val, 10);
+          if (cb.dataset.who === 'u') u += val;
+          if (cb.dataset.who === 'g') g += val;
+          if (cb.dataset.who === 'o') o += val;
+        }
+      });
+      const toSym = (n) => ((n & 4) ? 'r' : '-') + ((n & 2) ? 'w' : '-') + ((n & 1) ? 'x' : '-');
+      document.getElementById('calcCmdOutput').textContent = `chmod ${u}${g}${o} file.txt`;
+      document.getElementById('calcSymOutput').textContent = `-${toSym(u)}${toSym(g)}${toSym(o)}`;
+    }
+
+    // 3. Category Filter
+    function filterCategory(cat) {
+      document.querySelectorAll('.cat-btn').forEach(btn => {
+        if (btn.dataset.catBtn === cat) {
+          btn.className = 'cat-btn px-3 py-1.5 rounded-lg bg-blue-600 text-white font-semibold transition shrink-0';
+        } else {
+          btn.className = 'cat-btn px-3 py-1.5 rounded-lg bg-slateCard hover:bg-slateSurface text-slate-300 border border-slateBorder transition shrink-0';
+        }
+      });
+
+      document.querySelectorAll('.course-part').forEach(part => {
+        if (cat === 'all' || part.dataset.category === cat) {
+          part.classList.remove('hidden');
+        } else {
+          part.classList.add('hidden');
+        }
+      });
+    }
+
+    // 4. Live Search Filter
+    const searchInput = document.getElementById('courseSearch');
+    const clearBtn = document.getElementById('clearSearchBtn');
+
+    searchInput.addEventListener('input', (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      clearBtn.classList.toggle('hidden', q.length === 0);
+
+      document.querySelectorAll('.searchable-section').forEach(sec => {
+        const match = sec.innerText.toLowerCase().includes(q);
+        sec.classList.toggle('hidden', !match);
+      });
+    });
+
+    clearBtn.addEventListener('click', () => {
+      searchInput.value = '';
+      clearBtn.classList.add('hidden');
+      document.querySelectorAll('.searchable-section').forEach(sec => sec.classList.remove('hidden'));
+    });
+
+    // 5. Interactive 8-Question Quiz (Exact Questions from Pages 56-57 of Linux PDF)
+    const quizQuestions = [
+      {
+        q: "1. ما الأمر الذي يعرض المسار الحالي؟",
+        options: ["ls", "pwd", "whoami"],
+        correct: 1,
+        explanation: "الأمر pwd (Print Working Directory) يعرض المسار الحالي بالكامل."
+      },
+      {
+        q: "2. ما الأمر الذي ينشئ Directory مع المجلدات الأب إذا لم تكن موجودة؟",
+        options: ["mkdir -p", "touch -p", "rmdir -p"],
+        correct: 0,
+        explanation: "الخيار -p مع mkdir ينشئ المجلدات الأب المتداخلة تلقائياً."
+      },
+      {
+        q: "3. ماذا تعني الصلاحية chmod 750؟",
+        options: ["rwxr-x---", "rwxrwxrwx", "rw-r-----"],
+        correct: 0,
+        explanation: "7 = rwx للمالك، 5 = r-x للمجموعة، 0 = --- للآخرين."
+      },
+      {
+        q: "4. ما الفرق بين > و >> في Redirection؟",
+        options: ["لا فرق بينهما", "الأول يضيف للنهاية والثاني يمسح المحتوى", "الأول يمسح المحتوى السابق والثاني يضيف إلى نهاية الملف"],
+        correct: 2,
+        explanation: "الرمز > يستبدل محتوى الملف السابق، بينما >> يضيف (Append) إلى نهاية الملف."
+      },
+      {
+        q: "5. كيف نضيف المستخدم ali إلى المجموعة dev دون حذف مجموعاته الثانوية الأخرى؟",
+        options: ["usermod -G dev ali", "usermod -aG dev ali", "useradd -G dev ali"],
+        correct: 1,
+        explanation: "الخيار -aG يضيف المجموعة (Append) مع الحفاظ على المجموعات السابقة."
+      },
+      {
+        q: "6. أي ملف في النظام يحتوي على بصمات كلمات المرور المشفرة (Password Hashes)؟",
+        options: ["/etc/passwd", "/etc/group", "/etc/shadow"],
+        correct: 2,
+        explanation: "ملف /etc/shadow محمي ويحتوي على الـ Password Hashes وتواريخ انتهاء الصلاحية."
+      },
+      {
+        q: "7. ما الأمر الصحيح الذي يبحث عن الملفات التي تنتهي بـ .conf داخل /etc؟",
+        options: ["grep /etc '*.conf'", "find /etc -name '*.conf'", "cut -name '*.conf'"],
+        correct: 1,
+        explanation: "الأمر find يبحث عن الملفات حسب خصائصها واسمها باستخدام -name."
+      },
+      {
+        q: "8. ما وظيفة Sticky Bit على Directory مشترك مثل /tmp؟",
+        options: ["منع المستخدم العادي من حذف أو إعادة تسمية ملفات الآخرين", "إعطاء الجميع صلاحيات root", "منع قراءة الملفات داخل المجلد"],
+        correct: 0,
+        explanation: "الـ Sticky Bit (+t أو 1000) يحمي الملفات داخل المجلدات المشتركة بحيث لا يحذفها إلا مالكها أو root."
+      }
+    ];
+
+    function renderQuiz() {
+      const container = document.getElementById('quizContainer');
+      container.innerHTML = quizQuestions.map((item, idx) => `
+        <div class="p-4 rounded-xl bg-obsidian border border-slateBorder" id="q-card-${idx}">
+          <div class="font-bold text-slate-100 text-sm sm:text-base mb-3">${item.q}</div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            ${item.options.map((opt, oIdx) => `
+              <label class="flex items-center justify-between gap-2 p-3 rounded-lg bg-slateCard hover:bg-slateSurface border border-slateBorder cursor-pointer transition">
+                <div class="flex items-center gap-2">
+                  <input type="radio" name="quiz-q-${idx}" value="${oIdx}" class="accent-blue-500" />
+                  <span class="text-sm font-mono text-slate-200" dir="ltr">${opt}</span>
+                </div>
+              </label>
+            `).join('')}
+          </div>
+          <div id="q-feedback-${idx}" class="hidden mt-3 text-xs p-2.5 rounded-lg"></div>
+        </div>
+      `).join('');
+    }
+
+    function gradeQuiz() {
+      let score = 0;
+      quizQuestions.forEach((item, idx) => {
+        const selected = document.querySelector(`input[name="quiz-q-${idx}"]:checked`);
+        const feedback = document.getElementById(`q-feedback-${idx}`);
+        const card = document.getElementById(`q-card-${idx}`);
+        feedback.classList.remove('hidden');
+
+        if (selected && parseInt(selected.value, 10) === item.correct) {
+          score++;
+          card.className = "p-4 rounded-xl bg-obsidian border border-emerald-500/60";
+          feedback.className = "mt-3 text-xs p-2.5 rounded-lg bg-emerald-500/15 text-emerald-300 border border-emerald-500/30";
+          feedback.innerHTML = `<strong>✓ إجابة صحيحة!</strong> ${item.explanation}`;
+        } else {
+          card.className = "p-4 rounded-xl bg-obsidian border border-rose-500/60";
+          feedback.className = "mt-3 text-xs p-2.5 rounded-lg bg-rose-500/15 text-rose-300 border border-rose-500/30";
+          feedback.innerHTML = `<strong>✗ إجابة غير صحيحة.</strong> الجواب الصحيح هو: <code class="px-1.5 py-0.5 rounded bg-slate-900 text-emerald-300">${item.options[item.correct]}</code> — ${item.explanation}`;
+        }
+      });
+
+      const badge = document.getElementById('quizScoreBadge');
+      badge.classList.remove('hidden');
+      badge.textContent = `النتيجة: ${score} / ${quizQuestions.length}`;
+    }
+
+    function resetQuiz() {
+      document.getElementById('quizScoreBadge').classList.add('hidden');
+      renderQuiz();
+    }
+
+    // Initialize Quiz on load
+    window.addEventListener('DOMContentLoaded', () => {
+      renderQuiz();
+    });
+  </script>
+</body>
+</html>
